@@ -1,17 +1,31 @@
 @VehicleService_HostAddress = http://localhost:5001
+@AuthService_HostAddress = http://localhost:5278
 @vehicleId = 6
+@token = your-jwt-token-here
 
-### Get all vehicles
+### Step 1: Login to get JWT token (run this first!)
+POST {{AuthService_HostAddress}}/api/auth/login
+Content-Type: application/json
+
+{
+  "username": "marko",
+  "password": "password123"
+}
+
+### Get all vehicles (requires authentication)
 GET {{VehicleService_HostAddress}}/api/vehicles
 Accept: application/json
+Authorization: Bearer {{token}}
 
-### Get vehicle by ID
+### Get vehicle by ID (requires authentication)
 GET {{VehicleService_HostAddress}}/api/vehicles/{{vehicleId}}
 Accept: application/json
+Authorization: Bearer {{token}}
 
-### Register vehicle in national registry
+### Register vehicle in national registry (requires authentication)
 POST {{VehicleService_HostAddress}}/api/vehicles/register
 Content-Type: application/json
+Authorization: Bearer {{token}}
 
 {
   "registrationNumber": "BG-1234-AB",
@@ -43,9 +57,10 @@ Content-Type: application/json
   "hasPaymentConfirmation": true
 }
 
-### Renew registration (license plate sticker)
+### Renew registration (license plate sticker) - requires authentication
 POST {{VehicleService_HostAddress}}/api/vehicles/{{vehicleId}}/renew
 Content-Type: application/json
+Authorization: Bearer {{token}}
 
 {
   "months": 12,
@@ -58,9 +73,10 @@ Content-Type: application/json
   "insuranceCompany": "DDOR Osiguranje"
 }
 
-### Change license plates
+### Change license plates - requires authentication
 POST {{VehicleService_HostAddress}}/api/vehicles/{{vehicleId}}/change-license-plate
 Content-Type: application/json
+Authorization: Bearer {{token}}
 
 {
   "newRegistrationNumber": "BG-5678-CD",
@@ -73,9 +89,10 @@ Content-Type: application/json
   "hasPreviousLicensePlate": true
 }
 
-### Register temporary vehicle
+### Register temporary vehicle - requires authentication
 POST {{VehicleService_HostAddress}}/api/vehicles/register-temporary
 Content-Type: application/json
+Authorization: Bearer {{token}}
 
 {
   "registrationNumber": "BG-TEMP-99",

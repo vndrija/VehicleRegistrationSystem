@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.EntityFrameworkCore;
 using VehicleService.Models;
 using VehicleService.DTOs;
@@ -13,6 +14,7 @@ namespace VehicleService.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
+    [Authorize] // All endpoints require JWT authentication
     public class VehiclesController : ControllerBase
     {
         private readonly AppDbContext _db;

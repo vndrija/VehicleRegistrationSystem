@@ -1,6 +1,55 @@
-@AuthService_HostAddress = http://localhost:5278
+@AuthService_HostAddress = http://localhost:5000
+@token =
 
-GET {{AuthService_HostAddress}}/weatherforecast/
-Accept: application/json
+### Register new user
+POST {{AuthService_HostAddress}}/api/auth/register
+Content-Type: application/json
+
+{
+  "username": "marko",
+  "password": "password123",
+  "email": "marko@example.com",
+  "role": "User"
+}
+
+### Register admin user
+POST {{AuthService_HostAddress}}/api/auth/register
+Content-Type: application/json
+
+{
+  "username": "admin",
+  "password": "admin123",
+  "email": "admin@example.com",
+  "role": "Admin"
+}
+
+### Login
+POST {{AuthService_HostAddress}}/api/auth/login
+Content-Type: application/json
+
+{
+  "username": "marko",
+  "password": "password123"
+}
+
+### Validate token
+GET {{AuthService_HostAddress}}/api/auth/validate
+Authorization: Bearer {{token}}
+
+### Get current user info (requires token)
+GET {{AuthService_HostAddress}}/api/auth/me
+Authorization: Bearer {{token}}
+
+### Get user by ID
+GET {{AuthService_HostAddress}}/api/auth/users/1
+Authorization: Bearer {{token}}
+
+### Refresh token
+POST {{AuthService_HostAddress}}/api/auth/refresh
+Content-Type: application/json
+
+{
+  "refreshToken": "your-refresh-token-here"
+}
 
 ###

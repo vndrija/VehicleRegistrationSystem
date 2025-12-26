@@ -1,0 +1,40 @@
+<nav class="navbar-container">
+  <div class="navbar-content">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="flex justify-between items-center h-20">
+        <div class="flex items-center gap-3 cursor-pointer z-10" (click)="goToHome()">
+          <img
+            src="/Mali_grb_Srbije.png"
+            alt="Грб Србије"
+            class="h-14 w-auto drop-shadow-md"
+          />
+          <h1 class="text-xl font-bold text-white drop-shadow-md">eУправа - Регистрација возила</h1>
+        </div>
+        <div class="flex items-center gap-3 z-10">
+          @if (!isAuthenticated()) {
+            <p-button
+              label="Пријава"
+              (onClick)="goToLogin()"
+              styleClass="p-button-text text-white hover:bg-white/20"
+            ></p-button>
+            <p-button
+              label="Регистрација"
+              (onClick)="goToRegister()"
+              styleClass="bg-white text-blue-900 hover:bg-gray-100"
+            ></p-button>
+          } @else {
+            <span class="text-sm text-white mr-2 drop-shadow-md">
+              Добродошли, <span class="font-semibold">{{ getUserName() }}</span>
+            </span>
+            <button
+              (click)="logout()"
+              class="px-4 py-2 bg-red-600 text-white font-medium rounded-md hover:bg-red-700 transition-colors shadow-md"
+            >
+              Одјава
+            </button>
+          }
+        </div>
+      </div>
+    </div>
+  </div>
+</nav>

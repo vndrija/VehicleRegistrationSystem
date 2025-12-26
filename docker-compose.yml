@@ -11,6 +11,9 @@ services:
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
       - ASPNETCORE_URLS=http://+:8080
+      - ConnectionStrings__DefaultConnection=Server=sqlserver;Database=AuthDb;User Id=sa;Password=YourStrong@Passw0rd;TrustServerCertificate=True;
+    depends_on:
+      - sqlserver
     networks:
       - euprava-network
 
@@ -40,6 +43,19 @@ services:
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
       - ASPNETCORE_URLS=http://+:8080
+    networks:
+      - euprava-network
+
+  vehiclefrontend:
+    build:
+      context: ./VehicleFrontend
+      dockerfile: Dockerfile
+    container_name: vehiclefrontend
+    ports:
+      - "4200:80"
+    depends_on:
+      - authservice
+      - vehicleservice
     networks:
       - euprava-network
 

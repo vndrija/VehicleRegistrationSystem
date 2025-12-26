@@ -1,6 +1,113 @@
-@VehicleService_HostAddress = http://localhost:5293
+@VehicleService_HostAddress = http://localhost:5001
+@vehicleId = 6
 
-GET {{VehicleService_HostAddress}}/weatherforecast/
+### Get all vehicles
+GET {{VehicleService_HostAddress}}/api/vehicles
 Accept: application/json
+
+### Get vehicle by ID
+GET {{VehicleService_HostAddress}}/api/vehicles/{{vehicleId}}
+Accept: application/json
+
+### Register vehicle in national registry
+POST {{VehicleService_HostAddress}}/api/vehicles/register
+Content-Type: application/json
+
+{
+  "registrationNumber": "BG-1234-AB",
+  "chassisNumber": "1HGBH41JXMN109186",
+  "make": "Toyota",
+  "model": "Corolla",
+  "year": 2023,
+  "ownerName": "Marko Petrović",
+  "ownerId": "user-001",
+  "vehicleType": "Car",
+  "engineNumber": "ENG123456",
+  "color": "White",
+  "fuelType": "Petrol",
+  "engineCapacity": 1600,
+  "maxWeight": 1500,
+  "numberOfSeats": 5,
+  "registrationDate": "2024-01-15T10:00:00Z",
+  "registrationType": "Permanent",
+  "expirationDate": "2025-01-15T10:00:00Z",
+  "insuranceExpirationDate": "2025-06-15T10:00:00Z",
+  "insuranceCompany": "DDOR Osiguranje",
+  "hasTechnicalValidityCertificate": true,
+  "technicalValidityCertificateDate": "2024-12-20T10:00:00Z",
+  "hasInsuranceProof": true,
+  "hasOwnershipProof": true,
+  "ownershipProofType": "Invoice",
+  "hasOwnerIdentityProof": true,
+  "hasCustomsDutiesProof": false,
+  "hasPaymentConfirmation": true
+}
+
+### Renew registration (license plate sticker)
+POST {{VehicleService_HostAddress}}/api/vehicles/{{vehicleId}}/renew
+Content-Type: application/json
+
+{
+  "months": 12,
+  "hasTechnicalValidityCertificate": true,
+  "technicalValidityCertificateDate": "2024-12-25T10:00:00Z",
+  "hasInsuranceProof": true,
+  "hasOwnerIdentityProof": true,
+  "hasPaymentConfirmation": true,
+  "insuranceExpirationDate": "2026-06-15T10:00:00Z",
+  "insuranceCompany": "DDOR Osiguranje"
+}
+
+### Change license plates
+POST {{VehicleService_HostAddress}}/api/vehicles/{{vehicleId}}/change-license-plate
+Content-Type: application/json
+
+{
+  "newRegistrationNumber": "BG-5678-CD",
+  "reason": "Damaged",
+  "hasTechnicalValidityCertificate": true,
+  "technicalValidityCertificateDate": "2024-12-26T10:00:00Z",
+  "hasInsuranceProof": true,
+  "hasOwnerIdentityProof": true,
+  "hasPaymentConfirmation": true,
+  "hasPreviousLicensePlate": true
+}
+
+### Register temporary vehicle
+POST {{VehicleService_HostAddress}}/api/vehicles/register-temporary
+Content-Type: application/json
+
+{
+  "registrationNumber": "BG-TEMP-99",
+  "chassisNumber": "2HGBH41JXMN109999",
+  "make": "Mercedes",
+  "model": "C-Class",
+  "year": 2022,
+  "ownerName": "Anna Kovač",
+  "ownerId": "user-002",
+  "vehicleType": "Car",
+  "engineNumber": "ENG999999",
+  "color": "Black",
+  "fuelType": "Diesel",
+  "engineCapacity": 2000,
+  "maxWeight": 1800,
+  "numberOfSeats": 5,
+  "registrationDate": "2024-12-26T10:00:00Z",
+  "registrationPeriodMonths": 6,
+  "customsApprovalNumber": "CUS-2024-12345",
+  "customsApprovalDate": "2024-12-20T10:00:00Z",
+  "customsOffice": "Beograd Carinarnica",
+  "temporaryUseReason": "Foreign business",
+  "insuranceExpirationDate": "2025-06-26T10:00:00Z",
+  "insuranceCompany": "Generali Osiguranje",
+  "hasTechnicalValidityCertificate": true,
+  "technicalValidityCertificateDate": "2024-12-25T10:00:00Z",
+  "hasInsuranceProof": true,
+  "hasOwnershipProof": true,
+  "ownershipProofType": "Leasing contract",
+  "hasTemporaryImportApproval": true,
+  "hasOwnerIdentityProof": true,
+  "hasPaymentConfirmation": true
+}
 
 ###

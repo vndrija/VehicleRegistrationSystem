@@ -1,11 +1,15 @@
 using Microsoft.EntityFrameworkCore;
 using VehicleService.Models;
+using VehicleService.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseSqlServer("Server=(localdb)\\MSSQLLocalDB;Database=VehicleRegistrationDb;Trusted_Connection=True;TrustServerCertificate=True;"));
+
+// Register business services
+builder.Services.AddScoped<IVehicleService, VehicleManagementService>();
 
 builder.Services.AddControllers();
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi

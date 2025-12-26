@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using VehicleService.Models;
 
@@ -11,9 +12,11 @@ using VehicleService.Models;
 namespace VehicleService.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20251225003007_ExpandVehicle")]
+    partial class ExpandVehicle
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -38,17 +41,6 @@ namespace VehicleService.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<DateTime?>("CustomsApprovalDate")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("CustomsApprovalNumber")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("CustomsOffice")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
                     b.Property<int>("EngineCapacity")
                         .HasColumnType("int");
 
@@ -63,36 +55,12 @@ namespace VehicleService.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<bool>("HasCustomsDutiesProof")
-                        .HasColumnType("bit");
-
-                    b.Property<bool>("HasInsuranceProof")
-                        .HasColumnType("bit");
-
-                    b.Property<bool>("HasOwnerIdentityProof")
-                        .HasColumnType("bit");
-
-                    b.Property<bool>("HasOwnershipProof")
-                        .HasColumnType("bit");
-
-                    b.Property<bool>("HasPaymentConfirmation")
-                        .HasColumnType("bit");
-
-                    b.Property<bool>("HasTechnicalValidityCertificate")
-                        .HasColumnType("bit");
-
-                    b.Property<bool>("HasTemporaryImportApproval")
-                        .HasColumnType("bit");
-
                     b.Property<string>("InsuranceCompany")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<DateTime?>("InsuranceExpirationDate")
                         .HasColumnType("datetime2");
-
-                    b.Property<bool>("IsRegisteredInNationalRegistry")
-                        .HasColumnType("bit");
 
                     b.Property<DateTime?>("LastTechnicalInspectionDate")
                         .HasColumnType("datetime2");
@@ -108,9 +76,6 @@ namespace VehicleService.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<DateTime?>("NationalRegistryDate")
-                        .HasColumnType("datetime2");
-
                     b.Property<int>("NumberOfSeats")
                         .HasColumnType("int");
 
@@ -119,10 +84,6 @@ namespace VehicleService.Migrations
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("OwnerName")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("OwnershipProofType")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
@@ -147,13 +108,6 @@ namespace VehicleService.Migrations
 
                     b.Property<DateTime?>("TechnicalInspectionExpirationDate")
                         .HasColumnType("datetime2");
-
-                    b.Property<DateTime?>("TechnicalValidityCertificateDate")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("TemporaryUseReason")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("VehicleType")
                         .IsRequired()

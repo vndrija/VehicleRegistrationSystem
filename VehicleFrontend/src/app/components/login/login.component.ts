@@ -59,7 +59,7 @@ export class LoginComponent {
     this.authService.login(loginRequest).subscribe({
       next: (response) => {
         this.authService.saveToken(response.data.token);
-        this.authService.saveUserData(response.data.user.username);
+        this.authService.saveUserData(response.data.user);
         this.isLoading.set(false);
 
         const returnUrl = this.authService.getReturnUrl();

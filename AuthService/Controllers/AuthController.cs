@@ -169,4 +169,64 @@ public class AuthController : ControllerBase
             isActive = user.IsActive
         });
     }
+
+    // PUT /api/auth/profile - Update user profile
+    [HttpPut("profile")]
+    [Authorize]
+    public async Task<IActionResult> UpdateProfile([FromBody] UpdateProfileRequest request)
+    {
+        var userIdClaim = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+
+        if (string.IsNullOrEmpty(userIdClaim) || !int.TryParse(userIdClaim, out var userId))
+        {
+            return Unauthorized(new { message = "Invalid token" });
+        }
+
+        var (success, errors, userDto) = await _authService.UpdateProfileAsync(userId, request);
+
+        if (!success)
+        {
+            return BadRequest(new
+            {
+                message = "Profile update failed",
+                errors = errors
+            });
+        }
+
+        return Ok(new
+        {
+            message = "Profile updated successfully",
+            data = userDto
+        });
+    }
+
+    // PUT /api/auth/change-password - Change user password
+    [HttpPut("change-password")]
+    [Authorize]
+    public async Task<IActionResult> ChangePassword([FromBody] ChangePasswordRequest request)
+    {
+        var userIdClaim = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+
+        if (string.IsNullOrEmpty(userIdClaim) || !int.TryParse(userIdClaim, out var userId))
+        {
+            return Unauthorized(new { message = "Invalid token" });
+        }
+
+        var (success, errors, response) = await _authService.ChangePasswordAsync(userId, request);
+
+        if (!success)
+        {
+            return BadRequest(new
+            {
+                message = "Password change failed",
+                errors = errors
+            });
+        }
+
+        return Ok(new
+        {
+            message = "Password changed successfully",
+            data = response
+        });
+    }
 }

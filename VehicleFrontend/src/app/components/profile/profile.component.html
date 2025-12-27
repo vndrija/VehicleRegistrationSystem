@@ -1,0 +1,289 @@
+<app-navbar></app-navbar>
+
+<p-toast></p-toast>
+<p-confirmDialog></p-confirmDialog>
+
+<div class="min-h-screen bg-gray-50 py-8">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <h1 class="text-3xl font-bold text-gray-900 mb-8">Мој профил</h1>
+
+    <!-- User Profile Section -->
+    <div class="mb-8">
+      <p-card>
+        <ng-template pTemplate="header">
+          <div class="p-4 bg-blue-600 text-white">
+            <h2 class="text-xl font-semibold">Подаци о кориснику</h2>
+          </div>
+        </ng-template>
+
+        <form [formGroup]="profileForm" class="space-y-4">
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label for="username" class="block text-sm font-medium text-gray-700 mb-1">
+                Корисничко име
+              </label>
+              <input
+                id="username"
+                type="text"
+                pInputText
+                formControlName="username"
+                class="w-full"
+              />
+            </div>
+
+            <div>
+              <label for="email" class="block text-sm font-medium text-gray-700 mb-1">
+                Е-пошта
+              </label>
+              <input
+                id="email"
+                type="email"
+                pInputText
+                formControlName="email"
+                class="w-full"
+              />
+            </div>
+
+            <div>
+              <label for="role" class="block text-sm font-medium text-gray-700 mb-1">
+                Улога
+              </label>
+              <input
+                id="role"
+                type="text"
+                pInputText
+                formControlName="role"
+                class="w-full bg-gray-100"
+                readonly
+              />
+              <small class="text-gray-500">Улога се не може мењати</small>
+            </div>
+          </div>
+
+          @if (profileError()) {
+            <p-message severity="error" [text]="profileError()"></p-message>
+          }
+
+          <div class="flex gap-2">
+            @if (!isEditingProfile()) {
+              <p-button
+                label="Измени профил"
+                icon="pi pi-pencil"
+                (onClick)="enableProfileEdit()"
+              ></p-button>
+              <p-button
+                label="Промени лозинку"
+                icon="pi pi-key"
+                severity="secondary"
+                (onClick)="togglePasswordChange()"
+              ></p-button>
+            } @else {
+              <p-button
+                label="Сачувај"
+                icon="pi pi-check"
+                [loading]="isLoadingProfile()"
+                (onClick)="saveProfile()"
+              ></p-button>
+              <p-button
+                label="Откажи"
+                icon="pi pi-times"
+                severity="secondary"
+                (onClick)="cancelProfileEdit()"
+              ></p-button>
+            }
+          </div>
+        </form>
+      </p-card>
+    </div>
+
+    <!-- Change Password Section -->
+    @if (isChangingPassword()) {
+      <div class="mb-8">
+        <p-card>
+          <ng-template pTemplate="header">
+            <div class="p-4 bg-orange-600 text-white">
+              <h2 class="text-xl font-semibold">Промена лозинке</h2>
+            </div>
+          </ng-template>
+
+          <form [formGroup]="passwordForm" class="space-y-4">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div>
+                <label for="currentPassword" class="block text-sm font-medium text-gray-700 mb-1">
+                  Тренутна лозинка
+                </label>
+                <p-password
+                  id="currentPassword"
+                  formControlName="currentPassword"
+                  [feedback]="false"
+                  [toggleMask]="true"
+                  styleClass="w-full"
+                ></p-password>
+              </div>
+
+              <div>
+                <label for="newPassword" class="block text-sm font-medium text-gray-700 mb-1">
+                  Нова лозинка
+                </label>
+                <p-password
+                  id="newPassword"
+                  formControlName="newPassword"
+                  [toggleMask]="true"
+                  styleClass="w-full"
+                ></p-password>
+              </div>
+
+              <div>
+                <label for="confirmPassword" class="block text-sm font-medium text-gray-700 mb-1">
+                  Потврди нову лозинку
+                </label>
+                <p-password
+                  id="confirmPassword"
+                  formControlName="confirmPassword"
+                  [feedback]="false"
+                  [toggleMask]="true"
+                  styleClass="w-full"
+                ></p-password>
+              </div>
+            </div>
+
+            @if (passwordForm.hasError('passwordMismatch')) {
+              <p-message severity="error" text="Лозинке се не поклапају"></p-message>
+            }
+
+            @if (passwordError()) {
+              <p-message severity="error" [text]="passwordError()"></p-message>
+            }
+
+            <div class="flex gap-2">
+              <p-button
+                label="Промени лозинку"
+                icon="pi pi-check"
+                [loading]="isLoadingPassword()"
+                (onClick)="changePassword()"
+              ></p-button>
+              <p-button
+                label="Откажи"
+                icon="pi pi-times"
+                severity="secondary"
+                (onClick)="togglePasswordChange()"
+              ></p-button>
+            </div>
+          </form>
+        </p-card>
+      </div>
+    }
+
+    <!-- User Vehicles Section -->
+    <div>
+      <div class="flex justify-between items-center mb-4">
+        <h2 class="text-2xl font-bold text-gray-900">Моја возила</h2>
+      </div>
+
+      @if (isLoadingVehicles()) {
+        <div class="text-center py-8">
+          <i class="pi pi-spin pi-spinner text-4xl text-blue-600"></i>
+          <p class="mt-2 text-gray-600">Учитавање возила...</p>
+        </div>
+      } @else if (userVehicles().length === 0) {
+        <p-card>
+          <div class="text-center py-8">
+            <i class="pi pi-car text-6xl text-gray-300 mb-4"></i>
+            <p class="text-gray-600 text-lg">Немате регистрованих возила</p>
+          </div>
+        </p-card>
+      } @else {
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          @for (vehicle of userVehicles(); track vehicle.id) {
+            <p-card>
+              <ng-template pTemplate="header">
+                <div class="p-4"
+                  [class.bg-red-100]="isVehicleExpired(vehicle)"
+                  [class.bg-orange-100]="isVehicleExpiringSoon(vehicle) && !isVehicleExpired(vehicle)"
+                  [class.bg-blue-100]="!isVehicleExpiringSoon(vehicle) && !isVehicleExpired(vehicle)"
+                >
+                  <h3 class="text-xl font-bold"
+                    [class.text-red-900]="isVehicleExpired(vehicle)"
+                    [class.text-orange-900]="isVehicleExpiringSoon(vehicle) && !isVehicleExpired(vehicle)"
+                    [class.text-blue-900]="!isVehicleExpiringSoon(vehicle) && !isVehicleExpired(vehicle)"
+                  >
+                    {{ vehicle.make }} {{ vehicle.model }}
+                  </h3>
+                </div>
+              </ng-template>
+
+              <div class="space-y-2">
+                <div class="flex justify-between">
+                  <span class="font-semibold text-gray-700">Регистарска таблица:</span>
+                  <span class="text-gray-900">{{ vehicle.registrationNumber }}</span>
+                </div>
+                <div class="flex justify-between">
+                  <span class="font-semibold text-gray-700">Број шасије:</span>
+                  <span class="text-gray-900">{{ vehicle.chassisNumber }}</span>
+                </div>
+                <div class="flex justify-between">
+                  <span class="font-semibold text-gray-700">Година производње:</span>
+                  <span class="text-gray-900">{{ vehicle.year }}</span>
+                </div>
+                <div class="flex justify-between">
+                  <span class="font-semibold text-gray-700">Истиче:</span>
+                  <span
+                    [class.text-red-600]="isVehicleExpired(vehicle)"
+                    [class.text-orange-600]="isVehicleExpiringSoon(vehicle) && !isVehicleExpired(vehicle)"
+                    [class.font-bold]="isVehicleExpired(vehicle) || isVehicleExpiringSoon(vehicle)"
+                  >
+                    {{ formatDate(vehicle.expirationDate) }}
+                  </span>
+                </div>
+
+                @if (isVehicleExpired(vehicle)) {
+                  <div class="bg-red-100 border border-red-400 text-red-700 px-3 py-2 rounded">
+                    <i class="pi pi-exclamation-triangle mr-2"></i>
+                    <strong>Регистрација истекла!</strong>
+                  </div>
+                } @else if (isVehicleExpiringSoon(vehicle)) {
+                  <div class="bg-orange-100 border border-orange-400 text-orange-700 px-3 py-2 rounded">
+                    <i class="pi pi-exclamation-circle mr-2"></i>
+                    <strong>Регистрација ускоро истиче!</strong>
+                  </div>
+                }
+              </div>
+
+              <ng-template pTemplate="footer">
+                <div class="flex gap-2 justify-end">
+                  <p-button
+                    icon="pi pi-pencil"
+                    label="Измени"
+                    severity="secondary"
+                    size="small"
+                    (onClick)="openEditDialog(vehicle)"
+                  ></p-button>
+                  <p-button
+                    icon="pi pi-trash"
+                    label="Обриши"
+                    severity="danger"
+                    size="small"
+                    (onClick)="deleteVehicle(vehicle)"
+                  ></p-button>
+                </div>
+              </ng-template>
+            </p-card>
+          }
+        </div>
+      }
+    </div>
+  </div>
+</div>
+
+<!-- Edit Vehicle Dialog (Placeholder) -->
+<p-dialog
+  header="Измена возила"
+  [(visible)]="showEditDialog"
+  [modal]="true"
+  [style]="{ width: '50rem' }"
+  (onHide)="closeEditDialog()"
+>
+  <div class="text-center py-8">
+    <p>Форма за измену возила - биће имплементирано касније</p>
+  </div>
+</p-dialog>

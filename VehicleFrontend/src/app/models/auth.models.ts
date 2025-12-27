@@ -33,3 +33,18 @@ export interface ErrorResponse {
   message: string;
   errors: string[];
 }
+
+export interface UpdateProfileRequest {
+  username: string;
+  email: string;
+}
+
+export interface ChangePasswordRequest {
+  currentPassword: string;
+  newPassword: string;
+}
+
+export interface UpdateProfileResponse {
+  message: string;
+  data: UserDto;
+}

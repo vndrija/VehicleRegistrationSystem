@@ -8,8 +8,11 @@ using VehicleService.Services;
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
+var connectionString = builder.Configuration.GetConnectionString("DefaultConnection") 
+    ?? "Server=(localdb)\\MSSQLLocalDB;Database=VehicleRegistrationDb;Trusted_Connection=True;TrustServerCertificate=True;";
+
 builder.Services.AddDbContext<AppDbContext>(options =>
-    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+    options.UseSqlServer(connectionString));
 
 // Register business services
 builder.Services.AddScoped<IVehicleService, VehicleManagementService>();

@@ -14,7 +14,7 @@ namespace VehicleService.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    [Authorize] // All endpoints require JWT authentication
+    //[Authorize] // All endpoints require JWT authentication
     public class VehiclesController : ControllerBase
     {
         private readonly AppDbContext _db;
@@ -356,6 +356,20 @@ namespace VehicleService.Controllers
             .Where(v => v.OwnerId == ownerId)
             .ToListAsync();
         return Ok(vehicles);
+    }
+
+    // Get vehicles by owner name (for profile page)
+    [HttpGet("owner/{ownerName}")]
+    public async Task<IActionResult> GetByOwnerName(string ownerName)
+    {
+        var vehicles = await _db.Vehicles
+            .Where(v => v.OwnerName == ownerName)
+            .ToListAsync();
+        return Ok(new
+        {
+            message = "Vehicles retrieved successfully",
+            data = vehicles
+        });
     }
 
     // ADVANCED FEATURE #10: Update technical inspection

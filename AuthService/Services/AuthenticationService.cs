@@ -261,6 +261,117 @@ public class AuthenticationService : IAuthService
         }
     }
 
+    public async Task<(bool Success, List<string> Errors, UserDto? User)> UpdateProfileAsync(int userId, UpdateProfileRequest request)
+    {
+        var errors = new List<string>();
+
+        // Find user
+        var user = await _db.Users.FindAsync(userId);
+        if (user == null)
+        {
+            return (false, new List<string> { "User not found" }, null);
+        }
+
+        // Validation
+        if (string.IsNullOrWhiteSpace(request.Username))
+            errors.Add("Username is required");
+        else if (request.Username.Length < 3)
+            errors.Add("Username must be at least 3 characters");
+
+        if (string.IsNullOrWhiteSpace(request.Email))
+            errors.Add("Email is required");
+        else if (!request.Email.Contains("@"))
+            errors.Add("Invalid email format");
+
+        // Check if new username is taken by another user
+        if (!string.IsNullOrWhiteSpace(request.Username) && request.Username != user.Username)
+        {
+            var existingUser = await _db.Users.FirstOrDefaultAsync(u => u.Username == request.Username && u.Id != userId);
+            if (existingUser != null)
+                errors.Add("Username already exists");
+        }
+
+        // Check if new email is taken by another user
+        if (!string.IsNullOrWhiteSpace(request.Email) && request.Email != user.Email)
+        {
+            var existingEmail = await _db.Users.FirstOrDefaultAsync(u => u.Email == request.Email && u.Id != userId);
+            if (existingEmail != null)
+                errors.Add("Email already exists");
+        }
+
+        if (errors.Any())
+            return (false, errors, null);
+
+        // Update user
+        user.Username = request.Username;
+        user.Email = request.Email;
+
+        await _db.SaveChangesAsync();
+
+        var userDto = new UserDto
+        {
+            Id = user.Id,
+            Username = user.Username,
+            Email = user.Email,
+            Role = user.Role
+        };
+
+        return (true, new List<string>(), userDto);
+    }
+
+    public async Task<(bool Success, List<string> Errors, LoginResponse? Response)> ChangePasswordAsync(int userId, ChangePasswordRequest request)
+    {
+        var errors = new List<string>();
+
+        // Find user
+        var user = await _db.Users.FindAsync(userId);
+        if (user == null)
+        {
+            return (false, new List<string> { "User not found" }, null);
+        }
+
+        // Validation
+        if (string.IsNullOrWhiteSpace(request.CurrentPassword))
+            errors.Add("Current password is required");
+
+        if (string.IsNullOrWhiteSpace(request.NewPassword))
+            errors.Add("New password is required");
+        else if (request.NewPassword.Length < 6)
+            errors.Add("New password must be at least 6 characters");
+
+        if (errors.Any())
+            return (false, errors, null);
+
+        // Verify current password
+        if (!BCrypt.Net.BCrypt.Verify(request.CurrentPassword, user.PasswordHash))
+        {
+            return (false, new List<string> { "Current password is incorrect" }, null);
+        }
+
+        // Hash new password
+        user.PasswordHash = BCrypt.Net.BCrypt.HashPassword(request.NewPassword);
+        await _db.SaveChangesAsync();
+
+        // Generate new tokens
+        var (token, refreshToken, expiresAt) = GenerateTokens(user);
+
+        var response = new LoginResponse
+        {
+            Token = token,
+            RefreshToken = refreshToken,
+            ExpiresAt = expiresAt,
+            User = new UserDto
+            {
+                Id = user.Id,
+                Username = user.Username,
+                Email = user.Email,
+                Role = user.Role
+            }
+        };
+
+        return (true, new List<string>(), response);
+    }
+
     private (string Token, string RefreshToken, DateTime ExpiresAt) GenerateTokens(User user)
     {
         var tokenHandler = new JwtSecurityTokenHandler();

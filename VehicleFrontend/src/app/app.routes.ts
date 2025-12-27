@@ -15,6 +15,11 @@ export const routes: Routes = [
     loadComponent: () => import('./components/register/register.component').then(m => m.RegisterComponent)
   },
   {
+    path: 'profile',
+    canActivate: [authGuard],
+    loadComponent: () => import('./components/profile/profile.component').then(m => m.ProfileComponent)
+  },
+  {
     path: 'services/:serviceName',
     canActivate: [authGuard],
     loadComponent: () => import('./components/home/home.component').then(m => m.HomeComponent)

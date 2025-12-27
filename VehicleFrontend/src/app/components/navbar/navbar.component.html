@@ -24,7 +24,7 @@
             ></p-button>
           } @else {
             <span class="text-sm text-white mr-2 drop-shadow-md">
-              Добродошли, <span class="font-semibold">{{ getUserName() }}</span>
+              Добродошли, <span class="font-semibold cursor-pointer hover:underline" (click)="goToProfile()">{{ getUserName() }}</span>
             </span>
             <button
               (click)="logout()"

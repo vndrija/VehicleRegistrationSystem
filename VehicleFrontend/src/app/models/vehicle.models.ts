@@ -11,23 +11,16 @@ export interface Vehicle {
 
 export interface VehicleCreateRequest {
   registrationNumber: string;
-  chassisNumber: string;
   make: string;
   model: string;
   year: number;
-  ownerName: string;
-  expirationDate: Date | string;
 }
 
 export interface VehicleUpdateRequest {
-  id: number;
-  registrationNumber: string;
-  chassisNumber: string;
   make: string;
   model: string;
   year: number;
-  ownerName: string;
-  expirationDate: Date | string;
+
 }
 
 export interface VehicleResponse {

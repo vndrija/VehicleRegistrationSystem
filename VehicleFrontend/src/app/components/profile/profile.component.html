@@ -178,6 +178,11 @@
     <div>
       <div class="flex justify-between items-center mb-4">
         <h2 class="text-2xl font-bold text-gray-900">Моја возила</h2>
+        <p-button
+          label="Додај возило"
+          icon="pi pi-plus"
+          (onClick)="openCreateDialog()"
+        ></p-button>
       </div>
 
       @if (isLoadingVehicles()) {
@@ -275,7 +280,7 @@
   </div>
 </div>
 
-<!-- Edit Vehicle Dialog (Placeholder) -->
+<!-- Edit Vehicle Dialog -->
 <p-dialog
   header="Измена возила"
   [(visible)]="showEditDialog"
@@ -283,7 +288,226 @@
   [style]="{ width: '50rem' }"
   (onHide)="closeEditDialog()"
 >
-  <div class="text-center py-8">
-    <p>Форма за измену возила - биће имплементирано касније</p>
-  </div>
+  <form [formGroup]="editVehicleForm" class="space-y-4">
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div>
+        <label for="editRegistrationNumber" class="block text-sm font-medium text-gray-700 mb-1">
+          Регистарска таблица
+        </label>
+        <input
+          id="editRegistrationNumber"
+          type="text"
+          pInputText
+          formControlName="registrationNumber"
+          class="w-full bg-gray-100"
+          readonly
+        />
+        <small class="text-gray-500">Регистарска таблица се не може мењати</small>
+      </div>
+
+
+
+      <div>
+        <label for="editMake" class="block text-sm font-medium text-gray-700 mb-1">
+          Произвођач *
+        </label>
+        <input
+          id="editMake"
+          type="text"
+          pInputText
+          formControlName="make"
+          placeholder="нпр. Volkswagen"
+          class="w-full"
+        />
+        @if (editVehicleForm.get('make')?.invalid && editVehicleForm.get('make')?.touched) {
+          <small class="text-red-600">Произвођач је обавезан</small>
+        }
+      </div>
+
+      <div>
+        <label for="editModel" class="block text-sm font-medium text-gray-700 mb-1">
+          Модел *
+        </label>
+        <input
+          id="editModel"
+          type="text"
+          pInputText
+          formControlName="model"
+          placeholder="нпр. Golf"
+          class="w-full"
+        />
+        @if (editVehicleForm.get('model')?.invalid && editVehicleForm.get('model')?.touched) {
+          <small class="text-red-600">Модел је обавезан</small>
+        }
+      </div>
+
+      <div>
+        <label for="editYear" class="block text-sm font-medium text-gray-700 mb-1">
+          Година производње *
+        </label>
+        <input
+          id="editYear"
+          type="number"
+          pInputText
+          formControlName="year"
+          placeholder="нпр. 2020"
+          class="w-full"
+        />
+        @if (editVehicleForm.get('year')?.invalid && editVehicleForm.get('year')?.touched) {
+          <small class="text-red-600">Година мора бити између 1900 и {{ currentYear }}</small>
+        }
+      </div>
+
+      <div>
+        <label for="editOwnerName" class="block text-sm font-medium text-gray-700 mb-1">
+          Име власника *
+        </label>
+        <input
+          id="editOwnerName"
+          type="text"
+          pInputText
+          formControlName="ownerName"
+          class="w-full bg-gray-100"
+          readonly
+        />
+        <small class="text-gray-500">Име власника се не може мењати</small>
+      </div>
+
+      <div>
+        <label for="editExpirationDate" class="block text-sm font-medium text-gray-700 mb-1">
+          Датум истека регистрације
+        </label>
+        <input
+          id="editExpirationDate"
+          type="text"
+          pInputText
+          [value]="selectedVehicle() ? formatDate(selectedVehicle()!.expirationDate) : ''"
+          class="w-full bg-gray-100"
+          readonly
+        />
+        <small class="text-gray-500">Датум истека се не може мењати</small>
+      </div>
+    </div>
+
+    @if (editVehicleError()) {
+      <p-message severity="error" [text]="editVehicleError()"></p-message>
+    }
+  </form>
+
+  <ng-template pTemplate="footer">
+    <div class="flex gap-2 justify-end">
+      <p-button
+        label="Откажи"
+        icon="pi pi-times"
+        severity="secondary"
+        (onClick)="closeEditDialog()"
+      ></p-button>
+      <p-button
+        label="Сачувај измене"
+        icon="pi pi-check"
+        [loading]="isUpdatingVehicle()"
+        (onClick)="updateVehicle()"
+      ></p-button>
+    </div>
+  </ng-template>
+</p-dialog>
+
+<!-- Create Vehicle Dialog -->
+<p-dialog
+  header="Додај ново возило"
+  [(visible)]="showCreateDialog"
+  [modal]="true"
+  [style]="{ width: '40rem' }"
+  (onHide)="closeCreateDialog()"
+>
+  <form [formGroup]="createVehicleForm" class="space-y-4">
+    <div>
+      <label for="registrationNumber" class="block text-sm font-medium text-gray-700 mb-1">
+        Регистарска таблица *
+      </label>
+      <input
+        id="registrationNumber"
+        type="text"
+        pInputText
+        formControlName="registrationNumber"
+        placeholder="нпр. BG-123-AB"
+        class="w-full"
+      />
+      @if (createVehicleForm.get('registrationNumber')?.invalid && createVehicleForm.get('registrationNumber')?.touched) {
+        <small class="text-red-600">Регистарска таблица је обавезна</small>
+      }
+    </div>
+
+    <div>
+      <label for="make" class="block text-sm font-medium text-gray-700 mb-1">
+        Произвођач *
+      </label>
+      <input
+        id="make"
+        type="text"
+        pInputText
+        formControlName="make"
+        placeholder="нпр. Volkswagen"
+        class="w-full"
+      />
+      @if (createVehicleForm.get('make')?.invalid && createVehicleForm.get('make')?.touched) {
+        <small class="text-red-600">Произвођач је обавезан</small>
+      }
+    </div>
+
+    <div>
+      <label for="model" class="block text-sm font-medium text-gray-700 mb-1">
+        Модел *
+      </label>
+      <input
+        id="model"
+        type="text"
+        pInputText
+        formControlName="model"
+        placeholder="нпр. Golf"
+        class="w-full"
+      />
+      @if (createVehicleForm.get('model')?.invalid && createVehicleForm.get('model')?.touched) {
+        <small class="text-red-600">Модел је обавезан</small>
+      }
+    </div>
+
+    <div>
+      <label for="year" class="block text-sm font-medium text-gray-700 mb-1">
+        Година производње *
+      </label>
+      <input
+        id="year"
+        type="number"
+        pInputText
+        formControlName="year"
+        placeholder="нпр. 2020"
+        class="w-full"
+      />
+      @if (createVehicleForm.get('year')?.invalid && createVehicleForm.get('year')?.touched) {
+        <small class="text-red-600">Година мора бити између 1900 и {{ currentYear }}</small>
+      }
+    </div>
+
+    @if (createVehicleError()) {
+      <p-message severity="error" [text]="createVehicleError()"></p-message>
+    }
+  </form>
+
+  <ng-template pTemplate="footer">
+    <div class="flex gap-2 justify-end">
+      <p-button
+        label="Откажи"
+        icon="pi pi-times"
+        severity="secondary"
+        (onClick)="closeCreateDialog()"
+      ></p-button>
+      <p-button
+        label="Додај возило"
+        icon="pi pi-check"
+        [loading]="isCreatingVehicle()"
+        (onClick)="createVehicle()"
+      ></p-button>
+    </div>
+  </ng-template>
 </p-dialog>

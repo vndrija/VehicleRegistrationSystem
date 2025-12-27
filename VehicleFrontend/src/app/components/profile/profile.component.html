@@ -253,11 +253,11 @@
               <ng-template pTemplate="footer">
                 <div class="flex gap-2 justify-end">
                   <p-button
-                    icon="pi pi-pencil"
-                    label="Измени"
+                    icon="pi pi-info-circle"
+                    label="Детаљи"
                     severity="secondary"
                     size="small"
-                    (onClick)="openEditDialog(vehicle)"
+                    (onClick)="openDetailsDialog(vehicle)"
                   ></p-button>
                   <p-button
                     icon="pi pi-trash"
@@ -503,6 +503,274 @@
         icon="pi pi-check"
         [loading]="isCreatingVehicle()"
         (onClick)="createVehicle()"
+      ></p-button>
+    </div>
+  </ng-template>
+</p-dialog>
+
+<!-- Vehicle Details Dialog -->
+<p-dialog
+  header="Детаљи возила"
+  [(visible)]="showDetailsDialog"
+  [modal]="true"
+  [style]="{ width: '70rem' }"
+  (onHide)="closeDetailsDialog()"
+>
+  <div class="space-y-6">
+    <!-- Vehicle Information Section -->
+    <p-card>
+      <ng-template pTemplate="header">
+        <div class="p-4 bg-blue-600 text-white flex justify-between items-center">
+          <h3 class="text-xl font-semibold">Информације о возилу</h3>
+          <p-button
+            label="Измени"
+            icon="pi pi-pencil"
+            severity="secondary"
+            size="small"
+            [outlined]="true"
+            (onClick)="enableEditing()"
+            *ngIf="!isEditingInDetailsDialog()"
+          ></p-button>
+        </div>
+      </ng-template>
+
+      <form [formGroup]="detailsForm" class="space-y-4">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">
+              Регистарска таблица
+            </label>
+            <input
+              type="text"
+              pInputText
+              formControlName="registrationNumber"
+              class="w-full bg-gray-100"
+              readonly
+            />
+          </div>
+
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">
+              Произвођач *
+            </label>
+            <input
+              type="text"
+              pInputText
+              formControlName="make"
+              [readonly]="!isEditingInDetailsDialog()"
+              [class.bg-gray-100]="!isEditingInDetailsDialog()"
+              class="w-full"
+            />
+          </div>
+
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">
+              Модел *
+            </label>
+            <input
+              type="text"
+              pInputText
+              formControlName="model"
+              [readonly]="!isEditingInDetailsDialog()"
+              [class.bg-gray-100]="!isEditingInDetailsDialog()"
+              class="w-full"
+            />
+          </div>
+
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">
+              Година производње *
+            </label>
+            <input
+              type="number"
+              pInputText
+              formControlName="year"
+              [readonly]="!isEditingInDetailsDialog()"
+              [class.bg-gray-100]="!isEditingInDetailsDialog()"
+              class="w-full"
+            />
+          </div>
+
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">
+              Име власника
+            </label>
+            <input
+              type="text"
+              pInputText
+              formControlName="ownerName"
+              class="w-full bg-gray-100"
+              readonly
+            />
+          </div>
+
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">
+              Датум истека регистрације
+            </label>
+            <input
+              type="text"
+              pInputText
+              [value]="selectedVehicle() ? formatDate(selectedVehicle()!.expirationDate) : ''"
+              class="w-full bg-gray-100"
+              readonly
+            />
+          </div>
+
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">
+              Статус
+            </label>
+            <input
+              type="text"
+              pInputText
+              [value]="selectedVehicle()?.status || 'Unregistered'"
+              class="w-full bg-gray-100"
+              readonly
+            />
+          </div>
+        </div>
+
+        @if (isEditingInDetailsDialog()) {
+          <div class="flex gap-2 pt-4">
+            <p-button
+              label="Сачувај измене"
+              icon="pi pi-check"
+              [loading]="isUpdatingVehicle()"
+              (onClick)="saveDetailsEdits()"
+            ></p-button>
+            <p-button
+              label="Откажи"
+              icon="pi pi-times"
+              severity="secondary"
+              (onClick)="cancelDetailsEditing()"
+            ></p-button>
+          </div>
+        }
+      </form>
+    </p-card>
+
+    <!-- Ownership History Timeline -->
+    <p-card>
+      <ng-template pTemplate="header">
+        <div class="p-4 bg-green-600 text-white">
+          <h3 class="text-xl font-semibold">Историја власништва</h3>
+        </div>
+      </ng-template>
+
+      @if (isLoadingOwnershipHistory()) {
+        <div class="text-center py-4">
+          <i class="pi pi-spin pi-spinner text-2xl text-blue-600"></i>
+          <p class="mt-2 text-gray-600">Учитавање историје...</p>
+        </div>
+      } @else if (ownershipHistory().length === 0) {
+        <div class="text-center py-4">
+          <i class="pi pi-info-circle text-4xl text-gray-300 mb-2"></i>
+          <p class="text-gray-600">Нема доступне историје власништва</p>
+          <small class="text-gray-500">Тренутни власник је једини власник овог возила</small>
+        </div>
+      } @else {
+        <p-timeline [value]="ownershipHistory()" align="alternate" styleClass="customized-timeline">
+          <ng-template pTemplate="marker" let-history>
+            <div class="flex items-center justify-center w-8 h-8 rounded-full"
+              [class.bg-green-500]="!history.toDate"
+              [class.bg-blue-500]="history.toDate">
+              <i class="pi pi-user text-white"></i>
+            </div>
+          </ng-template>
+          <ng-template pTemplate="content" let-history>
+            <p-card>
+              <div class="p-3">
+                <div class="font-bold text-lg mb-2 text-gray-900">{{ history.ownerName }}</div>
+                <div class="text-gray-600 mb-1">
+                  <i class="pi pi-calendar mr-2"></i>
+                  <span class="font-semibold">Од:</span> {{ formatDate(history.fromDate) }}
+                </div>
+                @if (history.toDate) {
+                  <div class="text-gray-600">
+                    <i class="pi pi-calendar mr-2"></i>
+                    <span class="font-semibold">До:</span> {{ formatDate(history.toDate) }}
+                  </div>
+                } @else {
+                  <div class="text-green-600 font-semibold">
+                    <i class="pi pi-check-circle mr-2"></i>
+                    Тренутни власник
+                  </div>
+                }
+              </div>
+            </p-card>
+          </ng-template>
+        </p-timeline>
+      }
+    </p-card>
+
+    <!-- Transfer Vehicle Section -->
+    <p-card>
+      <ng-template pTemplate="header">
+        <div class="p-4 bg-orange-600 text-white">
+          <h3 class="text-xl font-semibold">Пренос власништва</h3>
+        </div>
+      </ng-template>
+
+      @if (!showTransferForm()) {
+        <div class="text-center py-4">
+          <p class="text-gray-700 mb-4">Желите да пренесете власништво над овим возилом?</p>
+          <p-button
+            label="Покрени захтев за пренос"
+            icon="pi pi-send"
+            (onClick)="openTransferForm()"
+          ></p-button>
+        </div>
+      } @else {
+        <form [formGroup]="transferForm" class="space-y-4">
+          <div>
+            <label for="toUserId" class="block text-sm font-medium text-gray-700 mb-2">
+              ID корисника (будући власник) *
+            </label>
+            <input
+              id="toUserId"
+              type="text"
+              pInputText
+              formControlName="toUserId"
+              placeholder="Унесите ID корисника"
+              class="w-full"
+            />
+            <small class="text-gray-500">Унесите ID корисника коме желите да пренесете возило</small>
+            @if (transferForm.get('toUserId')?.invalid && transferForm.get('toUserId')?.touched) {
+              <small class="text-red-600 block">ID корисника је обавезан</small>
+            }
+          </div>
+
+          @if (transferError()) {
+            <p-message severity="error" [text]="transferError()"></p-message>
+          }
+
+          <div class="flex gap-2">
+            <p-button
+              label="Пошаљи захтев"
+              icon="pi pi-send"
+              [loading]="isCreatingTransfer()"
+              (onClick)="createTransferRequest()"
+            ></p-button>
+            <p-button
+              label="Откажи"
+              icon="pi pi-times"
+              severity="secondary"
+              (onClick)="closeTransferForm()"
+            ></p-button>
+          </div>
+        </form>
+      }
+    </p-card>
+  </div>
+
+  <ng-template pTemplate="footer">
+    <div class="flex gap-2 justify-end">
+      <p-button
+        label="Затвори"
+        icon="pi pi-times"
+        severity="secondary"
+        (onClick)="closeDetailsDialog()"
       ></p-button>
     </div>
   </ng-template>

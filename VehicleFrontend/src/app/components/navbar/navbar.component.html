@@ -31,6 +31,12 @@
                 styleClass="bg-white text-blue-900 hover:bg-gray-100"
               ></p-button>
             }
+            <p-button
+              label="Преноси возила"
+              icon="pi pi-refresh"
+              (onClick)="goToTransferRequests()"
+              styleClass="bg-white text-blue-900 hover:bg-gray-100"
+            ></p-button>
             <span class="text-sm text-white mr-2 drop-shadow-md">
               Добродошли, <span class="font-semibold cursor-pointer hover:underline" (click)="goToProfile()">{{ getUserName() }}</span>
             </span>

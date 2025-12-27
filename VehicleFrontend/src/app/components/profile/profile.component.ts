@@ -13,11 +13,14 @@ import { ConfirmDialogModule } from 'primeng/confirmdialog';
 import { ConfirmationService, MessageService } from 'primeng/api';
 import { ToastModule } from 'primeng/toast';
 import { DatePickerModule } from 'primeng/datepicker';
+import { TimelineModule } from 'primeng/timeline';
 import { AuthService } from '../../services/auth.service';
 import { VehicleService } from '../../services/vehicle.service';
+import { VehicleTransferService } from '../../services/vehicle-transfer.service';
 import { NavbarComponent } from '../navbar/navbar.component';
 import { UserDto, UpdateProfileRequest, ChangePasswordRequest } from '../../models/auth.models';
 import { Vehicle, VehicleCreateRequest, VehicleUpdateRequest } from '../../models/vehicle.models';
+import { VehicleOwnershipHistory } from '../../models/vehicle-transfer.models';
 
 @Component({
   selector: 'app-profile',
@@ -34,6 +37,7 @@ import { Vehicle, VehicleCreateRequest, VehicleUpdateRequest } from '../../model
     ConfirmDialogModule,
     ToastModule,
     DatePickerModule,
+    TimelineModule,
     NavbarComponent
   ],
   providers: [ConfirmationService, MessageService],
@@ -44,6 +48,7 @@ export class ProfileComponent implements OnInit {
   private fb = inject(FormBuilder);
   private authService = inject(AuthService);
   private vehicleService = inject(VehicleService);
+  private vehicleTransferService = inject(VehicleTransferService);
   private router = inject(Router);
   private confirmationService = inject(ConfirmationService);
   private messageService = inject(MessageService);
@@ -54,6 +59,8 @@ export class ProfileComponent implements OnInit {
   passwordForm!: FormGroup;
   createVehicleForm!: FormGroup;
   editVehicleForm!: FormGroup;
+  detailsForm!: FormGroup;
+  transferForm!: FormGroup;
 
   isEditingProfile = signal<boolean>(false);
   isChangingPassword = signal<boolean>(false);
@@ -62,16 +69,23 @@ export class ProfileComponent implements OnInit {
   isLoadingVehicles = signal<boolean>(true);
   isCreatingVehicle = signal<boolean>(false);
   isUpdatingVehicle = signal<boolean>(false);
+  isEditingInDetailsDialog = signal<boolean>(false);
+  isLoadingOwnershipHistory = signal<boolean>(false);
+  isCreatingTransfer = signal<boolean>(false);
 
   userVehicles = signal<Vehicle[]>([]);
   selectedVehicle = signal<Vehicle | null>(null);
   showEditDialog = signal<boolean>(false);
   showCreateDialog = signal<boolean>(false);
+  showDetailsDialog = signal<boolean>(false);
+  showTransferForm = signal<boolean>(false);
+  ownershipHistory = signal<VehicleOwnershipHistory[]>([]);
 
   profileError = signal<string>('');
   passwordError = signal<string>('');
   createVehicleError = signal<string>('');
   editVehicleError = signal<string>('');
+  transferError = signal<string>('');
 
   currentYear = new Date().getFullYear();
 
@@ -112,6 +126,18 @@ export class ProfileComponent implements OnInit {
       year: ['', [Validators.required, Validators.min(1900), Validators.max(this.currentYear)]],
       ownerName: [{ value: '', disabled: true }]
     });
+
+    this.detailsForm = this.fb.group({
+      registrationNumber: [{ value: '', disabled: true }],
+      make: ['', [Validators.required]],
+      model: ['', [Validators.required]],
+      year: ['', [Validators.required, Validators.min(1900), Validators.max(this.currentYear)]],
+      ownerName: [{ value: '', disabled: true }]
+    });
+
+    this.transferForm = this.fb.group({
+      toUserId: ['', [Validators.required]]
+    });
   }
 
   private passwordMatchValidator(form: FormGroup): { [key: string]: boolean } | null {
@@ -143,7 +169,7 @@ export class ProfileComponent implements OnInit {
     if (!user) return;
 
     this.isLoadingVehicles.set(true);
-    this.vehicleService.getVehiclesByOwner(user.username).subscribe({
+    this.vehicleService.getVehiclesByOwnerId(user.id.toString()).subscribe({
       next: (response) => {
         this.userVehicles.set(response.data);
         this.isLoadingVehicles.set(false);
@@ -393,6 +419,155 @@ export class ProfileComponent implements OnInit {
       error: (error) => {
         this.editVehicleError.set(error.error?.message || 'Неуспешно ажурирање возила');
         this.isUpdatingVehicle.set(false);
+      }
+    });
+  }
+
+  // Details Dialog Methods
+  openDetailsDialog(vehicle: Vehicle): void {
+    this.selectedVehicle.set(vehicle);
+    this.detailsForm.patchValue({
+      registrationNumber: vehicle.registrationNumber,
+      make: vehicle.make,
+      model: vehicle.model,
+      year: vehicle.year,
+      ownerName: vehicle.ownerName
+    });
+    this.showDetailsDialog.set(true);
+    this.isEditingInDetailsDialog.set(false);
+    this.loadOwnershipHistory(vehicle.id);
+  }
+
+  closeDetailsDialog(): void {
+    this.showDetailsDialog.set(false);
+    this.selectedVehicle.set(null);
+    this.detailsForm.reset();
+    this.isEditingInDetailsDialog.set(false);
+    this.showTransferForm.set(false);
+    this.transferForm.reset();
+    this.transferError.set('');
+    this.ownershipHistory.set([]);
+  }
+
+  enableEditing(): void {
+    this.isEditingInDetailsDialog.set(true);
+  }
+
+  cancelDetailsEditing(): void {
+    const vehicle = this.selectedVehicle();
+    if (vehicle) {
+      this.detailsForm.patchValue({
+        make: vehicle.make,
+        model: vehicle.model,
+        year: vehicle.year
+      });
+    }
+    this.isEditingInDetailsDialog.set(false);
+  }
+
+  saveDetailsEdits(): void {
+    if (this.detailsForm.invalid) {
+      Object.keys(this.detailsForm.controls).forEach(key => {
+        this.detailsForm.get(key)?.markAsTouched();
+      });
+      return;
+    }
+
+    const vehicle = this.selectedVehicle();
+    if (!vehicle) return;
+
+    this.isUpdatingVehicle.set(true);
+
+    const request: VehicleUpdateRequest = {
+      make: this.detailsForm.value.make,
+      model: this.detailsForm.value.model,
+      year: this.detailsForm.value.year
+    };
+
+    this.vehicleService.updateVehicle(vehicle.id, request).subscribe({
+      next: (response) => {
+        this.userVehicles.update(vehicles =>
+          vehicles.map(v => v.id === vehicle.id ? response.data : v)
+        );
+        this.selectedVehicle.set(response.data);
+        this.isEditingInDetailsDialog.set(false);
+        this.isUpdatingVehicle.set(false);
+        this.messageService.add({
+          severity: 'success',
+          summary: 'Успех',
+          detail: 'Возило успешно ажурирано'
+        });
+      },
+      error: (error) => {
+        this.messageService.add({
+          severity: 'error',
+          summary: 'Грешка',
+          detail: error.error?.message || 'Неуспешно ажурирање возила'
+        });
+        this.isUpdatingVehicle.set(false);
+      }
+    });
+  }
+
+  // Ownership History Methods
+  loadOwnershipHistory(vehicleId: number): void {
+    this.isLoadingOwnershipHistory.set(true);
+    this.vehicleTransferService.getOwnershipHistory(vehicleId).subscribe({
+      next: (response) => {
+        this.ownershipHistory.set(response.data);
+        this.isLoadingOwnershipHistory.set(false);
+      },
+      error: (error) => {
+        console.error('Failed to load ownership history', error);
+        this.isLoadingOwnershipHistory.set(false);
+        this.ownershipHistory.set([]);
+      }
+    });
+  }
+
+  // Transfer Methods
+  openTransferForm(): void {
+    this.showTransferForm.set(true);
+    this.transferForm.reset();
+    this.transferError.set('');
+  }
+
+  closeTransferForm(): void {
+    this.showTransferForm.set(false);
+    this.transferForm.reset();
+    this.transferError.set('');
+  }
+
+  createTransferRequest(): void {
+    if (this.transferForm.invalid) {
+      this.transferForm.get('toUserId')?.markAsTouched();
+      return;
+    }
+
+    const vehicle = this.selectedVehicle();
+    if (!vehicle) return;
+
+    this.isCreatingTransfer.set(true);
+    this.transferError.set('');
+
+    const dto = {
+      vehicleId: vehicle.id,
+      toUserId: this.transferForm.value.toUserId
+    };
+
+    this.vehicleTransferService.createTransfer(dto).subscribe({
+      next: (response) => {
+        this.messageService.add({
+          severity: 'success',
+          summary: 'Успех',
+          detail: 'Захтев за пренос успешно послат'
+        });
+        this.closeTransferForm();
+        this.isCreatingTransfer.set(false);
+      },
+      error: (error) => {
+        this.transferError.set(error.error?.message || 'Неуспешно креирање захтева за пренос');
+        this.isCreatingTransfer.set(false);
       }
     });
   }

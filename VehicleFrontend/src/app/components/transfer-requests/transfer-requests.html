@@ -1,0 +1,137 @@
+<app-navbar></app-navbar>
+
+<p-toast></p-toast>
+
+<div class="min-h-screen bg-gray-50 py-8">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <h1 class="text-3xl font-bold text-gray-900 mb-8">Захтеви за пренос возила</h1>
+
+    <!-- Pending Received Transfers -->
+    <p-card>
+      <ng-template pTemplate="header">
+        <div class="p-4 bg-orange-600 text-white">
+          <h2 class="text-xl font-semibold">Примљени захтеви</h2>
+        </div>
+      </ng-template>
+
+      @if (isLoadingPending()) {
+        <div class="text-center py-8">
+          <i class="pi pi-spin pi-spinner text-4xl text-blue-600"></i>
+          <p class="mt-2 text-gray-600">Учитавање захтева...</p>
+        </div>
+      } @else if (pendingReceivedTransfers().length === 0) {
+        <div class="text-center py-8">
+          <i class="pi pi-inbox text-6xl text-gray-300 mb-4"></i>
+          <p class="text-gray-600 text-lg">Нема примљених захтева за пренос</p>
+        </div>
+      } @else {
+        <p-table [value]="pendingReceivedTransfers()" [tableStyle]="{ 'min-width': '50rem' }">
+          <ng-template pTemplate="header">
+            <tr>
+              <th>ID</th>
+              <th>Возило</th>
+              <th>Од корисника</th>
+              <th>Датум подношења</th>
+              <th class="text-center">Акције</th>
+            </tr>
+          </ng-template>
+          <ng-template pTemplate="body" let-transfer>
+            <tr>
+              <td>{{ transfer.id }}</td>
+              <td>
+                <div class="flex flex-col">
+                  <span class="font-semibold">{{ transfer.vehicle?.registrationNumber }}</span>
+                  <span class="text-sm text-gray-600">
+                    {{ transfer.vehicle?.make }} {{ transfer.vehicle?.model }} ({{ transfer.vehicle?.year }})
+                  </span>
+                </div>
+              </td>
+              <td>{{ transfer.fromUserId }}</td>
+              <td>{{ formatDateTime(transfer.createdAt) }}</td>
+              <td>
+                <div class="flex gap-2 justify-center">
+                  <p-button
+                    icon="pi pi-check"
+                    label="Прихвати"
+                    severity="success"
+                    size="small"
+                    [loading]="isProcessing()"
+                    (onClick)="acceptTransfer(transfer)"
+                  ></p-button>
+                  <p-button
+                    icon="pi pi-times"
+                    label="Одбиј"
+                    severity="danger"
+                    size="small"
+                    [loading]="isProcessing()"
+                    (onClick)="rejectTransfer(transfer)"
+                  ></p-button>
+                </div>
+              </td>
+            </tr>
+          </ng-template>
+        </p-table>
+      }
+    </p-card>
+
+    <!-- All My Transfers (History) -->
+    <div class="mt-8">
+      <p-card>
+        <ng-template pTemplate="header">
+          <div class="p-4 bg-blue-600 text-white">
+            <h2 class="text-xl font-semibold">Историја преноса</h2>
+          </div>
+        </ng-template>
+
+        @if (isLoadingAll()) {
+          <div class="text-center py-8">
+            <i class="pi pi-spin pi-spinner text-4xl text-blue-600"></i>
+            <p class="mt-2 text-gray-600">Учитавање историје...</p>
+          </div>
+        } @else if (allTransfers().length === 0) {
+          <div class="text-center py-8">
+            <i class="pi pi-inbox text-6xl text-gray-300 mb-4"></i>
+            <p class="text-gray-600 text-lg">Нема историје преноса</p>
+          </div>
+        } @else {
+          <p-table [value]="allTransfers()" [tableStyle]="{ 'min-width': '60rem' }">
+            <ng-template pTemplate="header">
+              <tr>
+                <th>ID</th>
+                <th>Возило</th>
+                <th>Од корисника</th>
+                <th>За корисника</th>
+                <th>Датум подношења</th>
+                <th>Статус</th>
+                <th>Одговорено</th>
+              </tr>
+            </ng-template>
+            <ng-template pTemplate="body" let-transfer>
+              <tr>
+                <td>{{ transfer.id }}</td>
+                <td>
+                  <div class="flex flex-col">
+                    <span class="font-semibold">{{ transfer.vehicle?.registrationNumber }}</span>
+                    <span class="text-sm text-gray-600">
+                      {{ transfer.vehicle?.make }} {{ transfer.vehicle?.model }} ({{ transfer.vehicle?.year }})
+                    </span>
+                  </div>
+                </td>
+                <td>{{ transfer.fromUserId }}</td>
+                <td>{{ transfer.toUserId }}</td>
+                <td>{{ formatDateTime(transfer.createdAt) }}</td>
+                <td>
+                  <p-tag
+                    [value]="getStatusLabel(transfer.status)"
+                    [severity]="getStatusSeverity(transfer.status)"
+                  ></p-tag>
+                </td>
+                <td>{{ transfer.respondedAt ? formatDateTime(transfer.respondedAt) : '-' }}</td>
+              </tr>
+            </ng-template>
+          </p-table>
+        }
+      </p-card>
+    </div>
+  </div>
+</div>

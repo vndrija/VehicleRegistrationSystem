@@ -79,7 +79,7 @@ export class RenewRegistration implements OnInit {
     }
 
     this.isLoadingVehicles.set(true);
-    this.vehicleService.getVehiclesByOwner(user.username).subscribe({
+    this.vehicleService.getVehiclesByOwnerId(user.id.toString()).subscribe({
       next: (response) => {
         // Filter vehicles that are Registered AND (expire within 30 days OR already expired)
         const today = new Date();

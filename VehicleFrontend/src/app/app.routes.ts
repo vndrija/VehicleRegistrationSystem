@@ -35,6 +35,11 @@ export const routes: Routes = [
     loadComponent: () => import('./components/admin-registration-requests/admin-registration-requests').then(m => m.AdminRegistrationRequests)
   },
   {
+    path: 'transfer-requests',
+    canActivate: [authGuard],
+    loadComponent: () => import('./components/transfer-requests/transfer-requests').then(m => m.TransferRequests)
+  },
+  {
     path: 'services/:serviceName',
     canActivate: [authGuard],
     loadComponent: () => import('./components/home/home.component').then(m => m.HomeComponent)

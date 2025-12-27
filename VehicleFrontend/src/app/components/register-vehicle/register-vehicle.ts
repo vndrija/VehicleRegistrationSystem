@@ -80,7 +80,7 @@ export class RegisterVehicle implements OnInit {
     }
 
     this.isLoadingVehicles.set(true);
-    this.vehicleService.getVehiclesByOwner(user.username).subscribe({
+    this.vehicleService.getVehiclesByOwnerId(user.id.toString()).subscribe({
       next: (response) => {
         console.log('All vehicles:', response.data);
         console.log('Vehicle statuses:', response.data.map(v => ({ id: v.id, status: v.status })));

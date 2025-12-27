@@ -28,6 +28,10 @@ export class VehicleService {
     return this.http.get<VehicleListResponse>(`${this.apiUrl}/owner/${ownerName}`);
   }
 
+  getVehiclesByOwnerId(ownerId: string): Observable<VehicleListResponse> {
+    return this.http.get<VehicleListResponse>(`${this.apiUrl}/owner-id/${ownerId}`);
+  }
+
   createVehicle(request: VehicleCreateRequest): Observable<VehicleResponse> {
     return this.http.post<VehicleResponse>(this.apiUrl, request);
   }

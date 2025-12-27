@@ -69,6 +69,18 @@ namespace VehicleService.Controllers
         _db.Vehicles.Add(newVehicle);
         await _db.SaveChangesAsync();
 
+        // Create initial ownership history
+        var initialOwnership = new VehicleOwnershipHistory
+        {
+            VehicleId = newVehicle.Id,
+            OwnerId = ownerId,
+            OwnerName = ownerName,
+            FromDate = DateTime.Now,
+            ToDate = null // Current owner, so no end date
+        };
+        _db.VehicleOwnershipHistory.Add(initialOwnership);
+        await _db.SaveChangesAsync();
+
         return Ok(new
         {
             message = "Vehicle created successfully",
@@ -116,6 +128,40 @@ namespace VehicleService.Controllers
         {
             message = "Vehicles retrieved successfully",
             data = vehicles
+        });
+    }
+
+    [HttpGet("owner-id/{ownerId}")]
+    public async Task<IActionResult> GetByOwnerId(string ownerId)
+    {
+        var vehicles = await _db.Vehicles
+            .Where(v => v.OwnerId == ownerId)
+            .ToListAsync();
+        return Ok(new
+        {
+            message = "Vehicles retrieved successfully",
+            data = vehicles
+        });
+    }
+
+    [HttpGet("{id}/ownership-history")]
+    public async Task<IActionResult> GetOwnershipHistory(int id)
+    {
+        var vehicle = await _db.Vehicles.FindAsync(id);
+        if (vehicle == null)
+        {
+            return NotFound(new { message = "Vehicle not found" });
+        }
+
+        var history = await _db.VehicleOwnershipHistory
+            .Where(h => h.VehicleId == id)
+            .OrderByDescending(h => h.FromDate)
+            .ToListAsync();
+
+        return Ok(new
+        {
+            message = "Ownership history retrieved successfully",
+            data = history
         });
     }
 

@@ -54,4 +54,8 @@ export class NavbarComponent {
   goToAdminRequests(): void {
     this.router.navigate(['/admin/registration-requests']);
   }
+
+  goToTransferRequests(): void {
+    this.router.navigate(['/transfer-requests']);
+  }
 }

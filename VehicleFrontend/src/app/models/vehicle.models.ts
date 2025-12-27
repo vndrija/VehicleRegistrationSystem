@@ -1,12 +1,12 @@
 export interface Vehicle {
   id: number;
   registrationNumber: string;
-  chassisNumber: string;
   make: string;
   model: string;
   year: number;
   ownerName: string;
   expirationDate: Date | string;
+  status: 'Unregistered' | 'Registered' | 'Active' | 'Deregistered';
 }
 
 export interface VehicleCreateRequest {

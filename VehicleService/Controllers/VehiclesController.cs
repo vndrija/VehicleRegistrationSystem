@@ -9,6 +9,7 @@ using Microsoft.EntityFrameworkCore;
 using VehicleService.Models;
 using VehicleService.DTOs;
 using VehicleService.Services;
+using VehicleService.Enums;
 
 namespace VehicleService.Controllers
 {
@@ -61,7 +62,8 @@ namespace VehicleService.Controllers
             Year = vehicle.Year,
             OwnerId = ownerId,
             OwnerName = ownerName,
-            ExpirationDate = DateTime.Now.AddYears(1) // Default 1 year expiration
+            ExpirationDate = DateTime.Now.AddYears(1), // Default 1 year expiration
+            Status = VehicleStatus.Unregistered // Explicitly set as Unregistered
         };
 
         _db.Vehicles.Add(newVehicle);
@@ -103,6 +105,12 @@ namespace VehicleService.Controllers
         await _db.SaveChangesAsync();
         return NoContent();
     }
+
+    // [HttpPost("register")]
+    // public async Task<IActionResult> RegisterVehicle([FromBody] RegisterVehicleRequest request)
+    // {
+
+    // }
     
 //     // ADVANCED FEATURE #1: Check expiring registrations
 //     [HttpGet("expiring")]

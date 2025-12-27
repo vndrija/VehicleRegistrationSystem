@@ -23,6 +23,14 @@
               styleClass="bg-white text-blue-900 hover:bg-gray-100"
             ></p-button>
           } @else {
+            @if (isAdmin()) {
+              <p-button
+                label="Захтеви за регистрацију"
+                icon="pi pi-list"
+                (onClick)="goToAdminRequests()"
+                styleClass="bg-white text-blue-900 hover:bg-gray-100"
+              ></p-button>
+            }
             <span class="text-sm text-white mr-2 drop-shadow-md">
               Добродошли, <span class="font-semibold cursor-pointer hover:underline" (click)="goToProfile()">{{ getUserName() }}</span>
             </span>

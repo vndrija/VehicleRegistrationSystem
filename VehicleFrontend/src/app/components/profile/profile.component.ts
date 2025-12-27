@@ -260,7 +260,6 @@ export class ProfileComponent implements OnInit {
     this.selectedVehicle.set(vehicle);
     this.editVehicleForm.patchValue({
       registrationNumber: vehicle.registrationNumber,
-      chassisNumber: vehicle.chassisNumber,
       make: vehicle.make,
       model: vehicle.model,
       year: vehicle.year,

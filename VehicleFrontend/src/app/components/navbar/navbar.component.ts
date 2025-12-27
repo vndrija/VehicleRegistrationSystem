@@ -45,4 +45,13 @@ export class NavbarComponent {
   getUserName(): string {
     return this.authService.getUserName() || 'Корисник';
   }
+
+  isAdmin(): boolean {
+    const user = this.authService.getUserData();
+    return user?.role === 'Admin';
+  }
+
+  goToAdminRequests(): void {
+    this.router.navigate(['/admin/registration-requests']);
+  }
 }

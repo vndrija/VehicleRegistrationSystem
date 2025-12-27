@@ -11,6 +11,7 @@ public class AppDbContext : DbContext
     }
 
     public DbSet<Vehicle> Vehicles { get; set; }
+    public DbSet<RegistrationRequest> RegistrationRequests { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -20,5 +21,18 @@ public class AppDbContext : DbContext
         modelBuilder.Entity<Vehicle>()
             .Property(v => v.Status)
             .HasConversion<string>();
+
+        // Store RegistrationRequestStatus enum as string
+        modelBuilder.Entity<RegistrationRequest>()
+            .Property(r => r.Status)
+            .HasConversion<string>();
+
+        // Configure relationship between RegistrationRequest and Vehicle
+        // Cascade delete: when vehicle is deleted, delete its registration requests too
+        modelBuilder.Entity<RegistrationRequest>()
+            .HasOne(r => r.Vehicle)
+            .WithMany()
+            .HasForeignKey(r => r.VehicleId)
+            .OnDelete(DeleteBehavior.Cascade);
     }
 }

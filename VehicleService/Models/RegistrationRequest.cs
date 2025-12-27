@@ -8,11 +8,12 @@ public class RegistrationRequest
     public int Id { get; set; }
     public int VehicleId { get; set; }
     public string UserId { get; set; } = "";
+    public RegistrationRequestType Type { get; set; } = RegistrationRequestType.New;
     public RegistrationRequestStatus Status { get; set; } = RegistrationRequestStatus.Pending;
     public DateTime TechnicalInspectionDate { get; set; }
     public string InsuranceDocPath { get; set; } = "";
     public string InspectionDocPath { get; set; } = "";
-    public string IdentityDocPath { get; set; } = "";
+    public string? IdentityDocPath { get; set; } // Optional for renewal
     public DateTime CreatedAt { get; set; } = DateTime.Now;
     public DateTime? ReviewedAt { get; set; }
     public string? ReviewedBy { get; set; } // Admin username who reviewed

@@ -1,7 +1,9 @@
 {
   "permissions": {
     "allow": [
-      "Bash(ng generate component:*)"
+      "Bash(ng generate component:*)",
+      "Bash(dotnet ef migrations:*)",
+      "Bash(dotnet ef database update:*)"
     ]
   }
 }

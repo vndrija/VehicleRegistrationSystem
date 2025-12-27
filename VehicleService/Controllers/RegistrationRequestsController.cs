@@ -58,10 +58,44 @@ public class RegistrationRequestsController : ControllerBase
             return Forbid();
         }
 
-        // Validation: Vehicle cannot be registered twice
-        if (vehicle.Status == VehicleStatus.Registered || vehicle.Status == VehicleStatus.Active)
+        // Type-specific validation
+        if (dto.Type == RegistrationRequestType.New)
         {
-            return BadRequest(new { message = "Vehicle is already registered" });
+            // Validation: Vehicle cannot be registered twice (for new registration)
+            if (vehicle.Status == VehicleStatus.Registered || vehicle.Status == VehicleStatus.Active)
+            {
+                return BadRequest(new { message = "Vehicle is already registered. Use renewal for registered vehicles." });
+            }
+
+            // Validation: All three documents must be uploaded for new registration
+            if (dto.InsuranceDoc == null || dto.InspectionDoc == null || dto.IdentityDoc == null)
+            {
+                return BadRequest(new { message = "All three documents (Insurance, Inspection, Identity) must be uploaded for new registration" });
+            }
+        }
+        else if (dto.Type == RegistrationRequestType.Renewal)
+        {
+            // Validation: Vehicle must be Registered
+            if (vehicle.Status != VehicleStatus.Registered)
+            {
+                return BadRequest(new { message = "Only registered vehicles can be renewed" });
+            }
+
+            // Validation: Vehicle must expire within 30 days or already expired
+            var daysUntilExpiration = (vehicle.ExpirationDate - DateTime.Now).TotalDays;
+            var isExpired = vehicle.ExpirationDate < DateTime.Now;
+            var expiresWithin30Days = daysUntilExpiration <= 30 && daysUntilExpiration >= 0;
+
+            if (!isExpired && !expiresWithin30Days)
+            {
+                return BadRequest(new { message = "Vehicle can only be renewed if it expires within 30 days or is already expired" });
+            }
+
+            // Validation: Insurance and Inspection documents required for renewal
+            if (dto.InsuranceDoc == null || dto.InspectionDoc == null)
+            {
+                return BadRequest(new { message = "Insurance and Inspection documents must be uploaded for renewal" });
+            }
         }
 
         // Check if there's already a pending request for this vehicle
@@ -71,12 +105,6 @@ public class RegistrationRequestsController : ControllerBase
         if (existingPendingRequest != null)
         {
             return BadRequest(new { message = "A pending registration request already exists for this vehicle" });
-        }
-
-        // Validation: All three documents must be uploaded
-        if (dto.InsuranceDoc == null || dto.InspectionDoc == null || dto.IdentityDoc == null)
-        {
-            return BadRequest(new { message = "All three documents (Insurance, Inspection, Identity) must be uploaded" });
         }
 
         // Validation: Technical inspection date must be within the last 30 days
@@ -97,13 +125,20 @@ public class RegistrationRequestsController : ControllerBase
         // Save documents
         var insuranceDocPath = await SaveFile(dto.InsuranceDoc, uploadsPath, "insurance");
         var inspectionDocPath = await SaveFile(dto.InspectionDoc, uploadsPath, "inspection");
-        var identityDocPath = await SaveFile(dto.IdentityDoc, uploadsPath, "identity");
+        string? identityDocPath = null;
+
+        // Identity document only required for new registration
+        if (dto.Type == RegistrationRequestType.New && dto.IdentityDoc != null)
+        {
+            identityDocPath = await SaveFile(dto.IdentityDoc, uploadsPath, "identity");
+        }
 
         // Create registration request
         var request = new RegistrationRequest
         {
             VehicleId = dto.VehicleId,
             UserId = userId,
+            Type = dto.Type,
             TechnicalInspectionDate = dto.TechnicalInspectionDate,
             InsuranceDocPath = insuranceDocPath,
             InspectionDocPath = inspectionDocPath,
@@ -225,10 +260,27 @@ public class RegistrationRequestsController : ControllerBase
             request.ReviewedAt = DateTime.Now;
             request.ReviewedBy = adminUsername;
 
-            // Update vehicle status to Registered
+            // Update vehicle based on request type
             if (request.Vehicle != null)
             {
-                request.Vehicle.Status = VehicleStatus.Registered;
+                if (request.Type == RegistrationRequestType.New)
+                {
+                    // New registration: Set status to Registered
+                    request.Vehicle.Status = VehicleStatus.Registered;
+                }
+                else if (request.Type == RegistrationRequestType.Renewal)
+                {
+                    // Renewal: Extend expiration date by 1 year
+                    // If vehicle is expired, extend from today, otherwise from current expiration
+                    var baseDate = request.Vehicle.ExpirationDate < DateTime.Now
+                        ? DateTime.Now
+                        : request.Vehicle.ExpirationDate;
+
+                    request.Vehicle.ExpirationDate = baseDate.AddYears(1);
+
+                    // Ensure vehicle status is Registered
+                    request.Vehicle.Status = VehicleStatus.Registered;
+                }
             }
 
             await _db.SaveChangesAsync();

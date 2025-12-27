@@ -27,6 +27,11 @@ public class AppDbContext : DbContext
             .Property(r => r.Status)
             .HasConversion<string>();
 
+        // Store RegistrationRequestType enum as string
+        modelBuilder.Entity<RegistrationRequest>()
+            .Property(r => r.Type)
+            .HasConversion<string>();
+
         // Configure relationship between RegistrationRequest and Vehicle
         // Cascade delete: when vehicle is deleted, delete its registration requests too
         modelBuilder.Entity<RegistrationRequest>()

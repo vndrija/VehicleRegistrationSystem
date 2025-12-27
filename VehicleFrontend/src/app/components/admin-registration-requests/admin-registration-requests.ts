@@ -186,4 +186,12 @@ export class AdminRegistrationRequests implements OnInit {
   formatDateTime(date: Date | string): string {
     return new Date(date).toLocaleString('sr-RS');
   }
+
+  getTypeSeverity(type: string): 'success' | 'info' {
+    return type === 'New' ? 'success' : 'info';
+  }
+
+  getTypeLabel(type: string): string {
+    return type === 'New' ? 'Нова' : 'Обнова';
+  }
 }

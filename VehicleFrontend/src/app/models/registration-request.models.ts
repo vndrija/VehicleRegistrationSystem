@@ -4,11 +4,12 @@ export interface RegistrationRequest {
   id: number;
   vehicleId: number;
   userId: string;
+  type: 'New' | 'Renewal';
   status: 'Pending' | 'Approved' | 'Rejected';
   technicalInspectionDate: Date | string;
   insuranceDocPath: string;
   inspectionDocPath: string;
-  identityDocPath: string;
+  identityDocPath?: string;
   createdAt: Date | string;
   reviewedAt?: Date | string;
   reviewedBy?: string;
@@ -18,10 +19,11 @@ export interface RegistrationRequest {
 
 export interface CreateRegistrationRequestDto {
   vehicleId: number;
+  type: 'New' | 'Renewal';
   technicalInspectionDate: Date | string;
   insuranceDoc: File;
   inspectionDoc: File;
-  identityDoc: File;
+  identityDoc?: File;
 }
 
 export interface ReviewRegistrationRequestDto {

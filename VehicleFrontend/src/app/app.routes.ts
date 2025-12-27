@@ -25,6 +25,11 @@ export const routes: Routes = [
     loadComponent: () => import('./components/register-vehicle/register-vehicle').then(m => m.RegisterVehicle)
   },
   {
+    path: 'services/renew-registration',
+    canActivate: [authGuard],
+    loadComponent: () => import('./components/renew-registration/renew-registration').then(m => m.RenewRegistration)
+  },
+  {
     path: 'admin/registration-requests',
     canActivate: [authGuard],
     loadComponent: () => import('./components/admin-registration-requests/admin-registration-requests').then(m => m.AdminRegistrationRequests)

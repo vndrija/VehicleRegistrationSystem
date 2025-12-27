@@ -58,6 +58,7 @@
           <ng-template pTemplate="header">
             <tr>
               <th>ID</th>
+              <th>Тип</th>
               <th>Возило</th>
               <th>Власник</th>
               <th>Датум техничког прегледа</th>
@@ -69,6 +70,12 @@
           <ng-template pTemplate="body" let-request>
             <tr>
               <td>{{ request.id }}</td>
+              <td>
+                <p-tag
+                  [value]="getTypeLabel(request.type)"
+                  [severity]="getTypeSeverity(request.type)"
+                ></p-tag>
+              </td>
               <td>
                 <div class="flex flex-col">
                   <span class="font-semibold">{{ request.vehicle?.registrationNumber }}</span>

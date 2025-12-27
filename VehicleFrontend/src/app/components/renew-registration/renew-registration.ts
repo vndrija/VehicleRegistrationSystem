@@ -20,7 +20,7 @@ import { AuthService } from '../../services/auth.service';
 import { Vehicle } from '../../models/vehicle.models';
 
 @Component({
-  selector: 'app-register-vehicle',
+  selector: 'app-renew-registration',
   standalone: true,
   imports: [
     CommonModule,
@@ -36,10 +36,10 @@ import { Vehicle } from '../../models/vehicle.models';
     NavbarComponent
   ],
   providers: [MessageService],
-  templateUrl: './register-vehicle.html',
-  styleUrl: './register-vehicle.css',
+  templateUrl: './renew-registration.html',
+  styleUrl: './renew-registration.css',
 })
-export class RegisterVehicle implements OnInit {
+export class RenewRegistration implements OnInit {
   private fb = inject(FormBuilder);
   private vehicleService = inject(VehicleService);
   private registrationRequestService = inject(RegistrationRequestService);
@@ -47,7 +47,7 @@ export class RegisterVehicle implements OnInit {
   private messageService = inject(MessageService);
   private router = inject(Router);
 
-  registrationForm!: FormGroup;
+  renewalForm!: FormGroup;
 
   userVehicles = signal<Vehicle[]>([]);
   isLoading = signal<boolean>(false);
@@ -56,7 +56,6 @@ export class RegisterVehicle implements OnInit {
 
   insuranceDoc = signal<File | null>(null);
   inspectionDoc = signal<File | null>(null);
-  identityDoc = signal<File | null>(null);
 
   maxDate = new Date();
   minDate = new Date();
@@ -64,7 +63,7 @@ export class RegisterVehicle implements OnInit {
   ngOnInit(): void {
     this.minDate.setDate(this.maxDate.getDate() - 30);
 
-    this.registrationForm = this.fb.group({
+    this.renewalForm = this.fb.group({
       vehicleId: ['', [Validators.required]],
       technicalInspectionDate: ['', [Validators.required]]
     });
@@ -82,16 +81,23 @@ export class RegisterVehicle implements OnInit {
     this.isLoadingVehicles.set(true);
     this.vehicleService.getVehiclesByOwner(user.username).subscribe({
       next: (response) => {
-        console.log('All vehicles:', response.data);
-        console.log('Vehicle statuses:', response.data.map(v => ({ id: v.id, status: v.status })));
+        // Filter vehicles that are Registered AND (expire within 30 days OR already expired)
+        const today = new Date();
+        const in30Days = new Date();
+        in30Days.setDate(today.getDate() + 30);
 
-        // Filter only unregistered vehicles (or vehicles without status - treat as unregistered)
-        const unregisteredVehicles = response.data.filter(v =>
-          v.status === 'Unregistered' || !v.status
-        );
-        console.log('Unregistered vehicles:', unregisteredVehicles);
+        const renewableVehicles = response.data.filter(v => {
+          // Must be registered
+          if (v.status !== 'Registered') return false;
 
-        this.userVehicles.set(unregisteredVehicles);
+          const expirationDate = new Date(v.expirationDate);
+          const isExpired = expirationDate < today;
+          const expiresWithin30Days = expirationDate <= in30Days && expirationDate >= today;
+
+          return isExpired || expiresWithin30Days;
+        });
+
+        this.userVehicles.set(renewableVehicles);
         this.isLoadingVehicles.set(false);
       },
       error: (error) => {
@@ -118,23 +124,17 @@ export class RegisterVehicle implements OnInit {
     }
   }
 
-  onIdentityDocSelect(event: any): void {
-    if (event.files && event.files.length > 0) {
-      this.identityDoc.set(event.files[0]);
-    }
-  }
-
   submitRequest(): void {
-    if (this.registrationForm.invalid) {
-      Object.keys(this.registrationForm.controls).forEach(key => {
-        this.registrationForm.get(key)?.markAsTouched();
+    if (this.renewalForm.invalid) {
+      Object.keys(this.renewalForm.controls).forEach(key => {
+        this.renewalForm.get(key)?.markAsTouched();
       });
       return;
     }
 
-    // Validate all documents are uploaded
-    if (!this.insuranceDoc() || !this.inspectionDoc() || !this.identityDoc()) {
-      this.errorMessage.set('Морате отпремити сва три документа');
+    // Validate both documents are uploaded
+    if (!this.insuranceDoc() || !this.inspectionDoc()) {
+      this.errorMessage.set('Морате отпремити оба документа (Осигурање и Технички преглед)');
       return;
     }
 
@@ -142,27 +142,26 @@ export class RegisterVehicle implements OnInit {
     this.errorMessage.set('');
 
     const formData = new FormData();
-    formData.append('vehicleId', this.registrationForm.value.vehicleId.toString());
-    formData.append('type', 'New'); // Set type to New
-    formData.append('technicalInspectionDate', this.registrationForm.value.technicalInspectionDate.toISOString());
+    formData.append('vehicleId', this.renewalForm.value.vehicleId.toString());
+    formData.append('type', 'Renewal'); // Set type to Renewal
+    formData.append('technicalInspectionDate', this.renewalForm.value.technicalInspectionDate.toISOString());
     formData.append('insuranceDoc', this.insuranceDoc()!);
     formData.append('inspectionDoc', this.inspectionDoc()!);
-    formData.append('identityDoc', this.identityDoc()!);
+    // No identity document for renewal
 
     this.registrationRequestService.createRequest(formData).subscribe({
       next: (response) => {
         this.messageService.add({
           severity: 'success',
           summary: 'Успех',
-          detail: 'Захтев за регистрацију успешно поднет'
+          detail: 'Захтев за обнову регистрације успешно поднет'
         });
         this.isLoading.set(false);
 
         // Reset form
-        this.registrationForm.reset();
+        this.renewalForm.reset();
         this.insuranceDoc.set(null);
         this.inspectionDoc.set(null);
-        this.identityDoc.set(null);
 
         // Redirect to profile after 2 seconds
         setTimeout(() => {
@@ -174,5 +173,13 @@ export class RegisterVehicle implements OnInit {
         this.isLoading.set(false);
       }
     });
+  }
+
+  formatExpirationDate(date: Date | string): string {
+    return new Date(date).toLocaleDateString('sr-RS');
+  }
+
+  isExpired(date: Date | string): boolean {
+    return new Date(date) < new Date();
   }
 }

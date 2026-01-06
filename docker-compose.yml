@@ -12,6 +12,11 @@ services:
       - ASPNETCORE_ENVIRONMENT=Development
       - ASPNETCORE_URLS=http://+:8080
       - ConnectionStrings__DefaultConnection=Server=sqlserver;Database=AuthDb;User Id=sa;Password=YourStrong@Passw0rd;TrustServerCertificate=True;
+      - Jwt__SecretKey=YourSuperSecretKeyForJWT_MustBe32CharactersOrMore!
+      - Jwt__Issuer=eUpravaAuthService
+      - Jwt__Audience=eUpravaClients
+      - Jwt__ExpireMinutes=60
+      - Jwt__RefreshTokenExpireDays=7
     depends_on:
       - sqlserver
     networks:
@@ -28,8 +33,15 @@ services:
       - ASPNETCORE_ENVIRONMENT=Development
       - ASPNETCORE_URLS=http://+:8080
       - ConnectionStrings__DefaultConnection=Server=sqlserver;Database=VehicleDb;User Id=sa;Password=YourStrong@Passw0rd;TrustServerCertificate=True;
+      - Services__AuthService=http://authservice:8080
+      - Services__NotificationService=http://notificationservice:8080
+      - Jwt__SecretKey=YourSuperSecretKeyForJWT_MustBe32CharactersOrMore!
+      - Jwt__Issuer=eUpravaAuthService
+      - Jwt__Audience=eUpravaClients
     depends_on:
       - sqlserver
+      - authservice
+      - notificationservice
     networks:
       - euprava-network
 
@@ -43,6 +55,15 @@ services:
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
       - ASPNETCORE_URLS=http://+:8080
+      - ConnectionStrings__DefaultConnection=Server=sqlserver;Database=NotificationDb;User Id=sa;Password=YourStrong@Passw0rd;TrustServerCertificate=True;
+      - Email__SenderName=eUprava Vehicle Registration
+      - Email__SenderEmail=matijasevicicon@gmail.com
+      - Email__SmtpHost=sandbox.smtp.mailtrap.io
+      - Email__SmtpPort=587
+      - Email__Username=ef5dc9dc17e857
+      - Email__Password=9f1f8b5c71e2ef
+    depends_on:
+      - sqlserver
     networks:
       - euprava-network
 

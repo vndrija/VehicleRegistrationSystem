@@ -4,7 +4,9 @@
       "Bash(dotnet add:*)",
       "Bash(dotnet add package:*)",
       "Bash(mkdir:*)",
-      "Bash(dotnet build:*)"
+      "Bash(dotnet build:*)",
+      "Bash(dotnet ef migrations:*)",
+      "Bash(dotnet ef database update:*)"
     ]
   }
 }

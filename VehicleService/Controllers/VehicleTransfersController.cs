@@ -16,10 +16,14 @@ namespace VehicleService.Controllers;
 public class VehicleTransfersController : ControllerBase
 {
     private readonly AppDbContext _db;
+    private readonly IHttpClientFactory _httpClientFactory;
+    private readonly ILogger<VehicleTransfersController> _logger;
 
-    public VehicleTransfersController(AppDbContext db)
+    public VehicleTransfersController(AppDbContext db, IHttpClientFactory httpClientFactory, ILogger<VehicleTransfersController> logger)
     {
         _db = db;
+        _httpClientFactory = httpClientFactory;
+        _logger = logger;
     }
 
     // POST: api/VehicleTransfers
@@ -222,6 +226,27 @@ public class VehicleTransfersController : ControllerBase
 
             await _db.SaveChangesAsync();
 
+            // Send notifications to both old and new owner
+            var token = Request.Headers["Authorization"].ToString();
+
+            // Notify old owner about transfer acceptance
+            await SendNotificationToOwner(
+                transfer.FromUserId,
+                previousOwnership?.OwnerName ?? "Previous Owner",
+                "Vehicle Transfer Accepted",
+                $"Your vehicle transfer request for {transfer.Vehicle?.RegistrationNumber} has been accepted by the new owner. Ownership has been transferred.",
+                token
+            );
+
+            // Notify new owner about transfer acceptance
+            await SendNotificationToOwner(
+                transfer.ToUserId,
+                newOwnerName,
+                "Vehicle Transfer Completed",
+                $"You have successfully received vehicle {transfer.Vehicle?.RegistrationNumber} from {previousOwnership?.OwnerName ?? "Previous Owner"}. You are now the registered owner.",
+                token
+            );
+
             return Ok(new
             {
                 message = "Transfer accepted successfully. Vehicle ownership updated.",
@@ -235,6 +260,32 @@ public class VehicleTransfersController : ControllerBase
             transfer.RespondedAt = DateTime.Now;
 
             await _db.SaveChangesAsync();
+
+            // Send notifications to both old and new owner
+            var token = Request.Headers["Authorization"].ToString();
+
+            // Notify original owner about rejection
+            await SendNotificationToOwner(
+                transfer.FromUserId,
+                transfer.Vehicle?.OwnerName ?? "Owner",
+                "Vehicle Transfer Rejected",
+                $"Your vehicle transfer request for {transfer.Vehicle?.RegistrationNumber} has been rejected by the recipient.",
+                token
+            );
+
+            // Notify recipient about their rejection
+            var recipientName = User.FindFirst("name")?.Value
+                                 ?? User.Identity?.Name
+                                 ?? User.FindFirst(System.Security.Claims.ClaimTypes.Name)?.Value
+                                 ?? transfer.ToUserId;
+
+            await SendNotificationToOwner(
+                transfer.ToUserId,
+                recipientName,
+                "Vehicle Transfer Declined",
+                $"You have declined the transfer request for vehicle {transfer.Vehicle?.RegistrationNumber}. The vehicle remains with the original owner.",
+                token
+            );
 
             return Ok(new
             {
@@ -265,5 +316,79 @@ public class VehicleTransfersController : ControllerBase
             .ToListAsync();
 
         return Ok(new { message = "Pending received transfers retrieved successfully", data = transfers });
+    }
+
+    // Helper method to send notification to owner via NotificationService
+    private async Task<bool> SendNotificationToOwner(string ownerId, string ownerName, string subject, string message, string authorizationToken)
+    {
+        try
+        {
+            // First, get the owner's email from AuthService
+            var authClient = _httpClientFactory.CreateClient("AuthService");
+
+            // Add Authorization header
+            if (!string.IsNullOrEmpty(authorizationToken))
+            {
+                authClient.DefaultRequestHeaders.Remove("Authorization");
+                authClient.DefaultRequestHeaders.Add("Authorization", authorizationToken);
+            }
+
+            var userResponse = await authClient.GetAsync($"/api/auth/users/{ownerId}");
+
+            if (!userResponse.IsSuccessStatusCode)
+            {
+                var errorContent = await userResponse.Content.ReadAsStringAsync();
+                _logger.LogWarning("Failed to get user details for ownerId: {OwnerId}. Status: {Status}. Response: {Response}",
+                    ownerId, userResponse.StatusCode, errorContent);
+                return false;
+            }
+
+            var userJson = await userResponse.Content.ReadAsStringAsync();
+
+            // The response is wrapped in { message, id, username, email, role, ... }
+            var responseObj = System.Text.Json.JsonDocument.Parse(userJson);
+            var email = responseObj.RootElement.GetProperty("email").GetString();
+
+            if (string.IsNullOrEmpty(email))
+            {
+                _logger.LogWarning("User {OwnerId} has no email address", ownerId);
+                return false;
+            }
+
+            _logger.LogInformation("Retrieved email {Email} for user {OwnerId}", email, ownerId);
+
+            // Now send notification via NotificationService
+            var notificationClient = _httpClientFactory.CreateClient("NotificationService");
+            var notificationRequest = new
+            {
+                userId = int.Parse(ownerId),
+                recipientEmail = email,
+                subject = subject,
+                message = message
+            };
+
+            var notificationResponse = await notificationClient.PostAsJsonAsync(
+                "/api/notification/send",
+                notificationRequest
+            );
+
+            if (notificationResponse.IsSuccessStatusCode)
+            {
+                _logger.LogInformation("Notification sent successfully to {Email} for user {OwnerId}", email, ownerId);
+                return true;
+            }
+            else
+            {
+                var errorContent = await notificationResponse.Content.ReadAsStringAsync();
+                _logger.LogWarning("Failed to send notification to {Email}. Status: {Status}. Response: {Response}",
+                    email, notificationResponse.StatusCode, errorContent);
+                return false;
+            }
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error sending notification to owner {OwnerId}", ownerId);
+            return false;
+        }
     }
 }

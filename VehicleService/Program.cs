@@ -17,6 +17,9 @@ builder.Services.AddDbContext<AppDbContext>(options =>
 // Register business services
 // builder.Services.AddScoped<IVehicleService, VehicleManagementService>();
 
+// Register background service for expiration notifications
+builder.Services.AddHostedService<ExpirationNotificationBackgroundService>();
+
 // Configure HttpClient for inter-service communication
 builder.Services.AddHttpClient("AuthService", client =>
 {

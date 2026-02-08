@@ -13,6 +13,7 @@ import { MessageService } from 'primeng/api';
 
 import { VehicleService } from '../../services/vehicle.service';
 import { AuthService } from '../../services/auth.service';
+import { PdfGeneratorService } from '../../services/pdf-generator.service';
 import { NavbarComponent } from '../navbar/navbar.component';
 import { SignaturePadComponent } from '../signature-pad/signature-pad.component';
 import { Vehicle } from '../../models/vehicle.models';
@@ -192,6 +193,7 @@ export class ChangePlatesComponent implements OnInit {
   private messageService = inject(MessageService);
   private router = inject(Router);
   private authService = inject(AuthService);
+  private pdfGenerator = inject(PdfGeneratorService);
 
   changePlateForm!: FormGroup;
   userVehicles = signal<Vehicle[]>([]);
@@ -199,6 +201,7 @@ export class ChangePlatesComponent implements OnInit {
   isLoadingVehicles = signal(false);
   isSubmitting = signal(false);
   isSignatureCaptured = signal(false);
+  signatureData = signal<string>('');
   error = signal<string>('');
 
   reasons = [
@@ -287,6 +290,24 @@ export class ChangePlatesComponent implements OnInit {
           life: 3000
         });
         this.isSubmitting.set(false);
+
+        // Generate PDF with change plate details
+        const currentUser = this.authService.getUserData();
+        if (currentUser && this.selectedVehicle()) {
+          this.pdfGenerator.generateChangePlatePdf({
+            userName: currentUser.username,
+            userId: currentUser.id,
+            vehicleMake: this.selectedVehicle()!.make,
+            vehicleModel: this.selectedVehicle()!.model,
+            vehicleYear: this.selectedVehicle()!.year,
+            oldRegistration: this.selectedVehicle()!.registrationNumber,
+            newRegistration: request.newRegistrationNumber,
+            reason: request.reason,
+            signatureImage: this.signatureData(),
+            confirmationNumber: `CP-${Date.now()}`
+          });
+        }
+
         setTimeout(() => {
           this.router.navigate(['/profile']);
         }, 2000);
@@ -299,6 +320,7 @@ export class ChangePlatesComponent implements OnInit {
   }
 
   onSignatureCaptured(signatureData: string): void {
+    this.signatureData.set(signatureData);
     this.isSignatureCaptured.set(!!signatureData);
     this.error.set('');
   }

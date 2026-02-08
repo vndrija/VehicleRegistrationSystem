@@ -1,7 +1,9 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.EntityFrameworkCore;
 using AuthService.DTOs;
 using AuthService.Services;
+using AuthService.Models;
 
 namespace AuthService.Controllers;
 
@@ -10,10 +12,12 @@ namespace AuthService.Controllers;
 public class AuthController : ControllerBase
 {
     private readonly IAuthService _authService;
+    private readonly AppDbContext _db;
 
-    public AuthController(IAuthService authService)
+    public AuthController(IAuthService authService, AppDbContext db)
     {
         _authService = authService;
+        _db = db;
     }
 
     // POST /api/auth/register
@@ -132,6 +136,30 @@ public class AuthController : ControllerBase
             createdAt = user.CreatedAt,
             lastLoginAt = user.LastLoginAt,
             isActive = user.IsActive
+        });
+    }
+
+    // GET /api/auth/users - Get all users (for dropdowns/selections)
+    [HttpGet("users")]
+    [Authorize]
+    public async Task<IActionResult> GetAllUsers()
+    {
+        var users = await _db.Users
+            .Where(u => u.IsActive)
+            .OrderBy(u => u.Username)
+            .Select(u => new
+            {
+                id = u.Id,
+                username = u.Username,
+                email = u.Email,
+                role = u.Role
+            })
+            .ToListAsync();
+
+        return Ok(new
+        {
+            count = users.Count,
+            data = users
         });
     }
 

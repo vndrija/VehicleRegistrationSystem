@@ -40,6 +40,11 @@ export const routes: Routes = [
     loadComponent: () => import('./components/transfer-requests/transfer-requests').then(m => m.TransferRequests)
   },
   {
+    path: 'services/change-plates',
+    canActivate: [authGuard],
+    loadComponent: () => import('./components/change-plates/change-plates.component').then(m => m.ChangePlatesComponent)
+  },
+  {
     path: 'services/:serviceName',
     canActivate: [authGuard],
     loadComponent: () => import('./components/home/home.component').then(m => m.HomeComponent)

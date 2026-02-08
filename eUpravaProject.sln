@@ -9,6 +9,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AuthService", "AuthService\
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NotificationService", "NotificationService\NotificationService.csproj", "{03BC9218-5B06-4743-A20E-334393DF98D2}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TrafficPoliceService", "TrafficPoliceService\TrafficPoliceService.csproj", "{70C69501-DEFA-493D-8D7C-D41C0C86B728}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -55,6 +57,18 @@ Global
 		{03BC9218-5B06-4743-A20E-334393DF98D2}.Release|x64.Build.0 = Release|Any CPU
 		{03BC9218-5B06-4743-A20E-334393DF98D2}.Release|x86.ActiveCfg = Release|Any CPU
 		{03BC9218-5B06-4743-A20E-334393DF98D2}.Release|x86.Build.0 = Release|Any CPU
+		{70C69501-DEFA-493D-8D7C-D41C0C86B728}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{70C69501-DEFA-493D-8D7C-D41C0C86B728}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{70C69501-DEFA-493D-8D7C-D41C0C86B728}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{70C69501-DEFA-493D-8D7C-D41C0C86B728}.Debug|x64.Build.0 = Debug|Any CPU
+		{70C69501-DEFA-493D-8D7C-D41C0C86B728}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{70C69501-DEFA-493D-8D7C-D41C0C86B728}.Debug|x86.Build.0 = Debug|Any CPU
+		{70C69501-DEFA-493D-8D7C-D41C0C86B728}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{70C69501-DEFA-493D-8D7C-D41C0C86B728}.Release|Any CPU.Build.0 = Release|Any CPU
+		{70C69501-DEFA-493D-8D7C-D41C0C86B728}.Release|x64.ActiveCfg = Release|Any CPU
+		{70C69501-DEFA-493D-8D7C-D41C0C86B728}.Release|x64.Build.0 = Release|Any CPU
+		{70C69501-DEFA-493D-8D7C-D41C0C86B728}.Release|x86.ActiveCfg = Release|Any CPU
+		{70C69501-DEFA-493D-8D7C-D41C0C86B728}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

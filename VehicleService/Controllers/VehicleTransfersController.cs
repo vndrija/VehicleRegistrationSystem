@@ -187,6 +187,45 @@ public class VehicleTransfersController : ControllerBase
 
         if (dto.Accept)
         {
+            // CHECK: Verify vehicle has no outstanding fines with police before transfer
+            if (transfer.Vehicle != null)
+            {
+                try
+                {
+                    var policeClient = _httpClientFactory.CreateClient("TrafficPoliceService");
+                    var policeResponse = await policeClient.GetAsync($"/api/policevehicle/check-vehicle/{transfer.Vehicle.RegistrationNumber}");
+
+                    if (policeResponse.IsSuccessStatusCode)
+                    {
+                        var policeData = await policeResponse.Content.ReadAsStringAsync();
+                        var policeReport = System.Text.Json.JsonDocument.Parse(policeData);
+                        var outstandingFines = policeReport.RootElement
+                            .GetProperty("data")
+                            .GetProperty("outstandingFines")
+                            .GetDecimal();
+
+                        // Block transfer if there are outstanding fines
+                        if (outstandingFines > 0)
+                        {
+                            return BadRequest(new
+                            {
+                                message = "Nije moguće preneti vlasništvo - vozilo ima neplaćene kazne",
+                                error = $"Neplaćene kazne: {outstandingFines} RSD",
+                                fineAmount = outstandingFines,
+                                registrationNumber = transfer.Vehicle.RegistrationNumber,
+                                note = "Vlasnik vozila mora platiti sve neplaćene kazne pre nego što se vlasništvo može preneti"
+                            });
+                        }
+                    }
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogWarning(ex, "Warning: Could not verify police status for vehicle {VehicleId}", transfer.Vehicle.Id);
+                    // Don't block transfer if police check fails - just log the warning
+                }
+            }
+
+            // If police check passed, proceed with transfer
             // Accept the transfer
             transfer.Status = VehicleTransferStatus.Accepted;
             transfer.RespondedAt = DateTime.Now;

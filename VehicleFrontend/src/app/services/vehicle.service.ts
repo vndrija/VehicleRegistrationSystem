@@ -43,4 +43,12 @@ export class VehicleService {
   deleteVehicle(id: number): Observable<void> {
     return this.http.delete<void>(`${this.apiUrl}/${id}`);
   }
+
+  getMyVehicles(): Observable<Vehicle[]> {
+    return this.http.get<Vehicle[]>(this.apiUrl);
+  }
+
+  changeLicensePlate(vehicleId: number, request: any): Observable<any> {
+    return this.http.put<any>(`${this.apiUrl}/${vehicleId}/change-license-plate`, request);
+  }
 }

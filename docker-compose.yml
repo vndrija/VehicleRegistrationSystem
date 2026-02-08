@@ -35,6 +35,7 @@ services:
       - ConnectionStrings__DefaultConnection=Server=sqlserver;Database=VehicleDb;User Id=sa;Password=YourStrong@Passw0rd;TrustServerCertificate=True;
       - Services__AuthService=http://authservice:8080
       - Services__NotificationService=http://notificationservice:8080
+      - Services__TrafficPoliceService=http://trafficpoliceservice:8080
       - Jwt__SecretKey=YourSuperSecretKeyForJWT_MustBe32CharactersOrMore!
       - Jwt__Issuer=eUpravaAuthService
       - Jwt__Audience=eUpravaClients
@@ -42,6 +43,20 @@ services:
       - sqlserver
       - authservice
       - notificationservice
+      - trafficpoliceservice
+    networks:
+      - euprava-network
+
+  trafficpoliceservice:
+    build:
+      context: ./TrafficPoliceService
+      dockerfile: Dockerfile
+    container_name: trafficpoliceservice
+    ports:
+      - "5003:8080"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_URLS=http://+:8080
     networks:
       - euprava-network
 

@@ -170,6 +170,60 @@ namespace VehicleService.Controllers
     }
 
     // GET: api/vehicles/expiring?days=30
+    // GET: api/vehicles/{id}/police-check
+    [HttpGet("{id}/police-check")]
+    public async Task<IActionResult> CheckVehicleWithPolice(int id)
+    {
+        var vehicle = await _db.Vehicles.FindAsync(id);
+        if (vehicle == null)
+        {
+            return NotFound(new { message = "Vehicle not found" });
+        }
+
+        try
+        {
+            var policeClient = _httpClientFactory.CreateClient("TrafficPoliceService");
+            var policeResponse = await policeClient.GetAsync($"/api/policevehicle/check-vehicle/{vehicle.RegistrationNumber}");
+
+            if (!policeResponse.IsSuccessStatusCode)
+            {
+                _logger.LogWarning("Police check failed for vehicle {VehicleId}", vehicle.Id);
+                return StatusCode((int)policeResponse.StatusCode, new
+                {
+                    message = "Failed to check vehicle status with police",
+                    error = await policeResponse.Content.ReadAsStringAsync()
+                });
+            }
+
+            var policeData = await policeResponse.Content.ReadAsStringAsync();
+            var policeReport = System.Text.Json.JsonDocument.Parse(policeData);
+
+            return Ok(new
+            {
+                message = "Police verification completed",
+                vehicle = new
+                {
+                    id = vehicle.Id,
+                    registrationNumber = vehicle.RegistrationNumber,
+                    make = vehicle.Make,
+                    model = vehicle.Model,
+                    ownerName = vehicle.OwnerName
+                },
+                policeReport = policeReport.RootElement.GetProperty("data")
+            });
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error checking vehicle with police for vehicle {VehicleId}", vehicle.Id);
+            return StatusCode(500, new
+            {
+                message = "Error checking vehicle status",
+                error = ex.Message
+            });
+        }
+    }
+
+    // GET: api/vehicles/expiring
     [HttpGet("expiring")]
     public async Task<IActionResult> GetExpiringVehicles([FromQuery] int days = 30)
     {
@@ -200,6 +254,41 @@ namespace VehicleService.Controllers
         if (vehicle.Status != VehicleStatus.Registered)
         {
             return BadRequest(new { message = "Only registered vehicles can be renewed" });
+        }
+
+        // CHECK: Verify vehicle has no outstanding fines with police before renewal
+        try
+        {
+            var policeClient = _httpClientFactory.CreateClient("TrafficPoliceService");
+            var policeResponse = await policeClient.GetAsync($"/api/policevehicle/check-vehicle/{vehicle.RegistrationNumber}");
+
+            if (policeResponse.IsSuccessStatusCode)
+            {
+                var policeData = await policeResponse.Content.ReadAsStringAsync();
+                var policeReport = System.Text.Json.JsonDocument.Parse(policeData);
+                var outstandingFines = policeReport.RootElement
+                    .GetProperty("data")
+                    .GetProperty("outstandingFines")
+                    .GetDecimal();
+
+                // Block renewal if there are outstanding fines
+                if (outstandingFines > 0)
+                {
+                    return BadRequest(new
+                    {
+                        message = "Nije moguće obnoviti registraciju - vozilo ima neplaćene kazne",
+                        error = $"Neplaćene kazne: {outstandingFines} RSD",
+                        fineAmount = outstandingFines,
+                        registrationNumber = vehicle.RegistrationNumber,
+                        note = "Vlasnik vozila mora platiti sve neplaćene kazne pre nego što se registracija može obnoviti"
+                    });
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            _logger.LogWarning(ex, "Warning: Could not verify police status for vehicle {VehicleId}", vehicle.Id);
+            // Don't block renewal if police check fails - just log the warning
         }
 
         // Extend expiration date
@@ -322,6 +411,84 @@ namespace VehicleService.Controllers
                 totalVehicles = expiringVehicles.Count,
                 notificationsSent = successCount,
                 notificationsFailed = failureCount
+            }
+        });
+    }
+
+    // POST: api/vehicles/{id}/report-to-police
+    [HttpPost("{id}/report-to-police")]
+    public async Task<IActionResult> ReportVehicleToPolice(int id)
+    {
+        var vehicle = await _db.Vehicles.FindAsync(id);
+        if (vehicle == null)
+        {
+            return NotFound(new { message = "Vehicle not found" });
+        }
+
+        try
+        {
+            var policeClient = _httpClientFactory.CreateClient("TrafficPoliceService");
+            var reportRequest = new
+            {
+                registrationNumber = vehicle.RegistrationNumber,
+                ownerName = vehicle.OwnerName,
+                make = vehicle.Make,
+                model = vehicle.Model,
+                expirationDate = vehicle.ExpirationDate
+            };
+
+            var response = await policeClient.PostAsJsonAsync(
+                "/api/policevehicle/report-vehicle",
+                reportRequest
+            );
+
+            var responseData = await response.Content.ReadAsStringAsync();
+
+            return Ok(new
+            {
+                message = "Vehicle reported to police",
+                statusCode = response.StatusCode,
+                policeResponse = System.Text.Json.JsonDocument.Parse(responseData).RootElement
+            });
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error reporting vehicle to police for vehicle {VehicleId}", vehicle.Id);
+            return StatusCode(500, new
+            {
+                message = "Error reporting vehicle to police",
+                error = ex.Message
+            });
+        }
+    }
+
+    // PUT: api/vehicles/{id}/change-license-plate
+    [HttpPut("{id}/change-license-plate")]
+    public async Task<IActionResult> ChangeLicensePlate(int id, [FromBody] ChangeLicensePlateRequest request)
+    {
+        var vehicleManagementService = new VehicleManagementService(_db);
+
+        var (success, errors, vehicle) = await vehicleManagementService.ChangeLicensePlateAsync(id, request);
+
+        if (!success)
+        {
+            return BadRequest(new
+            {
+                message = "Neuspešna promena registarske tablice",
+                errors = errors
+            });
+        }
+
+        return Ok(new
+        {
+            message = "Registarska tablica je uspešno promenjena",
+            data = new
+            {
+                id = vehicle!.Id,
+                newRegistrationNumber = vehicle.RegistrationNumber,
+                make = vehicle.Make,
+                model = vehicle.Model,
+                changedAt = DateTime.Now
             }
         });
     }

@@ -33,6 +33,12 @@ builder.Services.AddHttpClient("NotificationService", client =>
     client.Timeout = TimeSpan.FromSeconds(15);
 });
 
+builder.Services.AddHttpClient("TrafficPoliceService", client =>
+{
+    client.BaseAddress = new Uri(builder.Configuration["Services:TrafficPoliceService"] ?? "http://localhost:5003");
+    client.Timeout = TimeSpan.FromSeconds(10);
+});
+
 // JWT Authentication Configuration
 var jwtSettings = builder.Configuration.GetSection("Jwt");
 var secretKey = jwtSettings["SecretKey"] ?? throw new InvalidOperationException("JWT SecretKey is not configured");

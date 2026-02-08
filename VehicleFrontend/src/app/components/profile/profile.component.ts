@@ -10,6 +10,7 @@ import { PasswordModule } from 'primeng/password';
 import { MessageModule } from 'primeng/message';
 import { DialogModule } from 'primeng/dialog';
 import { ConfirmDialogModule } from 'primeng/confirmdialog';
+import { SelectModule } from 'primeng/select';
 import { ConfirmationService, MessageService } from 'primeng/api';
 import { ToastModule } from 'primeng/toast';
 import { DatePickerModule } from 'primeng/datepicker';
@@ -17,7 +18,9 @@ import { TimelineModule } from 'primeng/timeline';
 import { AuthService } from '../../services/auth.service';
 import { VehicleService } from '../../services/vehicle.service';
 import { VehicleTransferService } from '../../services/vehicle-transfer.service';
+import { UserService, UserOption } from '../../services/user.service';
 import { NavbarComponent } from '../navbar/navbar.component';
+import { VehiclePoliceStatusComponent } from '../vehicle-police-status/vehicle-police-status.component';
 import { UserDto, UpdateProfileRequest, ChangePasswordRequest } from '../../models/auth.models';
 import { Vehicle, VehicleCreateRequest, VehicleUpdateRequest } from '../../models/vehicle.models';
 import { VehicleOwnershipHistory } from '../../models/vehicle-transfer.models';
@@ -35,10 +38,12 @@ import { VehicleOwnershipHistory } from '../../models/vehicle-transfer.models';
     MessageModule,
     DialogModule,
     ConfirmDialogModule,
+    SelectModule,
     ToastModule,
     DatePickerModule,
     TimelineModule,
-    NavbarComponent
+    NavbarComponent,
+    VehiclePoliceStatusComponent
   ],
   providers: [ConfirmationService, MessageService],
   templateUrl: './profile.component.html',
@@ -49,11 +54,14 @@ export class ProfileComponent implements OnInit {
   private authService = inject(AuthService);
   private vehicleService = inject(VehicleService);
   private vehicleTransferService = inject(VehicleTransferService);
+  private userService = inject(UserService);
   private router = inject(Router);
   private confirmationService = inject(ConfirmationService);
   private messageService = inject(MessageService);
 
   currentUser = signal<UserDto | null>(null);
+  availableUsers = signal<UserOption[]>([]);
+  isLoadingUsers = signal<boolean>(false);
 
   profileForm!: FormGroup;
   passwordForm!: FormGroup;
@@ -530,6 +538,24 @@ export class ProfileComponent implements OnInit {
     this.showTransferForm.set(true);
     this.transferForm.reset();
     this.transferError.set('');
+    this.loadAvailableUsers();
+  }
+
+  loadAvailableUsers(): void {
+    this.isLoadingUsers.set(true);
+    this.userService.getAllUsers().subscribe({
+      next: (response) => {
+        // Filter out current user from the list
+        const currentUserId = this.currentUser()?.id;
+        const otherUsers = response.data.filter(u => u.id !== currentUserId);
+        this.availableUsers.set(otherUsers);
+        this.isLoadingUsers.set(false);
+      },
+      error: (error) => {
+        this.transferError.set('Неуспешно учитавање листе корисника');
+        this.isLoadingUsers.set(false);
+      }
+    });
   }
 
   closeTransferForm(): void {
@@ -552,7 +578,7 @@ export class ProfileComponent implements OnInit {
 
     const dto = {
       vehicleId: vehicle.id,
-      toUserId: this.transferForm.value.toUserId
+      toUserId: String(this.transferForm.value.toUserId)  // Convert number to string
     };
 
     this.vehicleTransferService.createTransfer(dto).subscribe({

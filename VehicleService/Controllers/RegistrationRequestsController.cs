@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 using VehicleService.DTOs;
 using VehicleService.Enums;
 using VehicleService.Models;
@@ -20,11 +21,15 @@ public class RegistrationRequestsController : ControllerBase
 {
     private readonly AppDbContext _db;
     private readonly IWebHostEnvironment _environment;
+    private readonly IHttpClientFactory _httpClientFactory;
+    private readonly ILogger<RegistrationRequestsController> _logger;
 
-    public RegistrationRequestsController(AppDbContext db, IWebHostEnvironment environment)
+    public RegistrationRequestsController(AppDbContext db, IWebHostEnvironment environment, IHttpClientFactory httpClientFactory, ILogger<RegistrationRequestsController> logger)
     {
         _db = db;
         _environment = environment;
+        _httpClientFactory = httpClientFactory;
+        _logger = logger;
     }
 
     // POST: api/RegistrationRequests
@@ -96,6 +101,41 @@ public class RegistrationRequestsController : ControllerBase
             {
                 return BadRequest(new { message = "Insurance and Inspection documents must be uploaded for renewal" });
             }
+        }
+
+        // CHECK: Verify vehicle has no outstanding fines with police before submitting registration request
+        try
+        {
+            var policeClient = _httpClientFactory.CreateClient("TrafficPoliceService");
+            var policeResponse = await policeClient.GetAsync($"/api/policevehicle/check-vehicle/{vehicle.RegistrationNumber}");
+
+            if (policeResponse.IsSuccessStatusCode)
+            {
+                var policeData = await policeResponse.Content.ReadAsStringAsync();
+                var policeReport = System.Text.Json.JsonDocument.Parse(policeData);
+                var outstandingFines = policeReport.RootElement
+                    .GetProperty("data")
+                    .GetProperty("outstandingFines")
+                    .GetDecimal();
+
+                // Block registration request if there are outstanding fines
+                if (outstandingFines > 0)
+                {
+                    return BadRequest(new
+                    {
+                        message = "Nije moguće poslati zahtev za registraciju - vozilo ima neplaćene kazne",
+                        error = $"Neplaćene kazne: {outstandingFines} RSD",
+                        fineAmount = outstandingFines,
+                        registrationNumber = vehicle.RegistrationNumber,
+                        note = "Vodite računa o neplaćenim kaznama pre nego što poslate zahtev za registraciju. Sve kazne moraju biti plaćene."
+                    });
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            _logger.LogWarning(ex, "Warning: Could not verify police status for vehicle {VehicleId}", vehicle.Id);
+            // Don't block registration request if police check fails - just log the warning
         }
 
         // Check if there's already a pending request for this vehicle
@@ -255,6 +295,44 @@ public class RegistrationRequestsController : ControllerBase
 
         if (dto.Approve)
         {
+            // CHECK: Verify vehicle has no outstanding fines with police before approval
+            if (request.Vehicle != null)
+            {
+                try
+                {
+                    var policeClient = _httpClientFactory.CreateClient("TrafficPoliceService");
+                    var policeResponse = await policeClient.GetAsync($"/api/policevehicle/check-vehicle/{request.Vehicle.RegistrationNumber}");
+
+                    if (policeResponse.IsSuccessStatusCode)
+                    {
+                        var policeData = await policeResponse.Content.ReadAsStringAsync();
+                        var policeReport = System.Text.Json.JsonDocument.Parse(policeData);
+                        var outstandingFines = policeReport.RootElement
+                            .GetProperty("data")
+                            .GetProperty("outstandingFines")
+                            .GetDecimal();
+
+                        // Block registration if there are outstanding fines
+                        if (outstandingFines > 0)
+                        {
+                            return BadRequest(new
+                            {
+                                message = "Nije moguće odobriti registraciju - vozilo ima neplaćene kazne",
+                                error = $"Neplaćene kazne: {outstandingFines} RSD",
+                                fineAmount = outstandingFines,
+                                registrationNumber = request.Vehicle.RegistrationNumber,
+                                note = "Vlasnik vozila mora platiti sve neplaćene kazne pre nego što se registracija može odobriti"
+                            });
+                        }
+                    }
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogWarning(ex, "Warning: Could not verify police status for vehicle {VehicleId}", request.Vehicle.Id);
+                    // Don't block approval if police check fails - just log the warning
+                }
+            }
+
             // Approve the request
             request.Status = RegistrationRequestStatus.Approved;
             request.ReviewedAt = DateTime.Now;

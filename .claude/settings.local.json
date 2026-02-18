@@ -6,7 +6,10 @@
       "Bash(mkdir:*)",
       "Bash(dotnet build:*)",
       "Bash(dotnet ef migrations:*)",
-      "Bash(dotnet ef database update:*)"
+      "Bash(dotnet ef database update:*)",
+      "Bash(powershell -Command \"Set-Location ''C:\\\\Users\\\\Lenovo\\\\Desktop\\\\projekti\\\\eUprava''; Move-Item ''VehicleFrontend'' ''vehicleRegistrationService\\\\VehicleFrontend''; Write-Host ''Done VehicleFrontend''\")",
+      "Bash(powershell -Command \"Set-Location ''C:\\\\Users\\\\Lenovo\\\\Desktop\\\\projekti\\\\eUprava''; Move-Item ''NotificationService'' ''vehicleRegistrationService\\\\NotificationService''; Write-Host ''Done NotificationService''\")",
+      "Bash(powershell -Command:*)"
     ]
   }
 }

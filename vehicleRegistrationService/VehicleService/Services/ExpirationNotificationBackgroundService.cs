@@ -200,7 +200,7 @@ public class ExpirationNotificationBackgroundService : BackgroundService
             var loginRequest = new
             {
                 username = "system_service",
-                password = "SystemService@2024"
+                password = "SystemService@2026"
             };
 
             var response = await authClient.PostAsJsonAsync("/api/auth/login", loginRequest);

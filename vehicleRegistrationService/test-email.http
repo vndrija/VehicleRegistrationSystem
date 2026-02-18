@@ -1,0 +1,13 @@
+### Test NotificationService directly
+POST http://localhost:5002/api/notification/send
+Content-Type: application/json
+
+{
+  "userId": 9044,
+  "recipientEmail": "biletel470@roratu.com",
+  "subject": "Test Email from eUprava",
+  "message": "This is a test email to verify SMTP configuration is working correctly."
+}
+
+### Get notifications for user
+GET http://localhost:5002/api/notification/user/9044

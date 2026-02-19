@@ -13,8 +13,7 @@ RUN npm ci
 COPY . .
 
 # Build the Angular app for Docker environment
-RUN npm run build -- --configuration docker
-
+RUN npm run build 
 # Stage 2: Serve the app with nginx
 FROM nginx:alpine
 

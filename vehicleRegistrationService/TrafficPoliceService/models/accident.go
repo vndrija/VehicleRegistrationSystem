@@ -8,10 +8,10 @@ import (
 
 type Accident struct {
 	gorm.Model
-	Location       string    `json:"location"`
-	Description    string    `json:"description"`
-	Severity       string    `json:"severity"` // MINOR, MAJOR, CRITICAL
+	Location       string    `gorm:"type:nvarchar(255)" json:"location"`
+	Description    string    `gorm:"type:nvarchar(max)" json:"description"`
+	Severity       string    `gorm:"type:nvarchar(20)" json:"severity"` // MINOR, MAJOR, CRITICAL
 	AccidentDate   time.Time `json:"accidentDate"`
-	InvolvedPlates string    `json:"involvedPlates"` // Comma-separated plates for simplicity
+	InvolvedPlates string    `gorm:"type:nvarchar(500)" json:"involvedPlates"` // CSV of plates
 	IsResolved     bool      `json:"isResolved"`
 }

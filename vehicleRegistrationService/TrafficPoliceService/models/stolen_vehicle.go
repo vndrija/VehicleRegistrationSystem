@@ -8,9 +8,10 @@ import (
 
 type StolenVehicle struct {
 	gorm.Model
-	VehiclePlate string    `gorm:"uniqueIndex;not null" json:"vehiclePlate"`
+	// SQL Server requires fixed length for Unique Indexes
+	VehiclePlate string    `gorm:"type:nvarchar(20);uniqueIndex;not null" json:"vehiclePlate"`
 	ReportedDate time.Time `json:"reportedDate"`
-	Description  string    `json:"description"`
-	Status       string    `json:"status"` // ACTIVE, RECOVERED
-	ContactInfo  string    `json:"contactInfo"`
+	Description  string    `gorm:"type:nvarchar(max)" json:"description"`
+	Status       string    `gorm:"type:nvarchar(20)" json:"status"` // ACTIVE, RECOVERED
+	ContactInfo  string    `gorm:"type:nvarchar(255)" json:"contactInfo"`
 }

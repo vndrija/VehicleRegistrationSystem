@@ -2,11 +2,11 @@ package models
 
 import "gorm.io/gorm"
 
-// Flags like "Expired Registration", "Warrant", etc.
 type VehicleFlag struct {
 	gorm.Model
-	VehiclePlate string `json:"vehiclePlate"`
-	FlagType     string `json:"flagType"`
-	Description  string `json:"description"`
+	// Index added for fast lookups by plate
+	VehiclePlate string `gorm:"type:nvarchar(20);index;not null" json:"vehiclePlate"`
+	FlagType     string `gorm:"type:nvarchar(50)" json:"flagType"`
+	Description  string `gorm:"type:nvarchar(255)" json:"description"`
 	IsActive     bool   `json:"isActive"`
 }

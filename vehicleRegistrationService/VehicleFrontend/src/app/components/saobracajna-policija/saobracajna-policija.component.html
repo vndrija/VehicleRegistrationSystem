@@ -1,0 +1,57 @@
+<app-navbar></app-navbar>
+
+<!-- Tricolor stripe -->
+<div class="flex" style="height: 4px">
+  <div class="flex-1 bg-[#C6363C]"></div>
+  <div class="flex-1 bg-[#003893]"></div>
+  <div class="flex-1 bg-gray-300"></div>
+</div>
+
+<!-- Page header -->
+<div class="bg-[#C6363C]">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+    <button class="flex items-center gap-1.5 text-red-200 hover:text-white text-xs mb-3 transition-colors" (click)="goBack()">
+      <i class="pi pi-arrow-left" style="font-size: 0.65rem"></i>
+      Назад на еУправу
+    </button>
+    <p class="text-[10px] font-semibold tracking-[0.15em] uppercase text-red-200 mb-1">
+      Министарство унутрашњих послова — Република Србија
+    </p>
+    <h1 class="text-xl font-bold text-white">Саобраћајна Полиција</h1>
+  </div>
+</div>
+
+<div class="min-h-screen bg-[#EEF2F8] py-16">
+  <div class="max-w-lg mx-auto px-4 text-center">
+    <div class="bg-white border border-gray-200 rounded-lg shadow-sm px-8 py-12">
+      <div class="w-16 h-16 bg-[#EEF2F8] rounded-full flex items-center justify-center mx-auto mb-5">
+        <svg xmlns="http://www.w3.org/2000/svg" class="w-8 h-8 text-[#003893]" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z" />
+        </svg>
+      </div>
+      <h2 class="text-lg font-bold text-gray-900 mb-2">Ускоро доступно</h2>
+      <p class="text-sm text-gray-500 leading-relaxed mb-6">
+        Услуге саобраћајне полиције — провера прекршаја, потражна возила и евиденција казни — биће доступне у наредном периоду.
+      </p>
+      <button
+        (click)="goBack()"
+        class="inline-flex items-center gap-2 text-sm text-[#003893] font-medium hover:underline"
+      >
+        <i class="pi pi-arrow-left text-xs"></i>
+        Назад на главну страну
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Footer -->
+<footer class="border-t border-gray-200 bg-white">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex items-center justify-between">
+    <p class="text-xs text-gray-400">© 2026 Министарство унутрашњих послова Републике Србије</p>
+    <div class="flex items-center gap-0.5">
+      <div class="w-4 h-2.5 bg-[#C6363C] rounded-sm"></div>
+      <div class="w-4 h-2.5 bg-[#003893] rounded-sm"></div>
+      <div class="w-4 h-2.5 bg-gray-200 rounded-sm border border-gray-300"></div>
+    </div>
+  </div>
+</footer>

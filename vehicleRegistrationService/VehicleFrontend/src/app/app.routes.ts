@@ -4,7 +4,16 @@ import { authGuard } from './guards/auth.guard';
 export const routes: Routes = [
   {
     path: '',
+    loadComponent: () => import('./components/portal/portal.component').then(m => m.PortalComponent)
+  },
+  {
+    path: 'mup-vozila',
     loadComponent: () => import('./components/home/home.component').then(m => m.HomeComponent)
+  },
+  {
+    path: 'saobracajna-policija',
+    canActivate: [authGuard],
+    loadComponent: () => import('./components/saobracajna-policija/saobracajna-policija.component').then(m => m.SaobracajnaPolicija)
   },
   {
     path: 'login',

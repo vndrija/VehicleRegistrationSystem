@@ -78,14 +78,14 @@ export class RegisterComponent {
 
     this.authService.register(registerRequest).subscribe({
       next: (response) => {
-        this.successMessage.set('Registration successful! Redirecting to login...');
+        this.successMessage.set('Регистрација успешна! Преусмеравање на пријаву...');
         this.isLoading.set(false);
         setTimeout(() => {
           this.router.navigate(['/login']);
         }, 2000);
       },
       error: (error) => {
-        this.errorMessage.set(error.error?.message || 'Registration failed. Please try again.');
+        this.errorMessage.set(error.error?.message || 'Регистрација није успела. Покушајте поново.');
         this.isLoading.set(false);
       }
     });

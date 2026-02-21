@@ -19,7 +19,7 @@
       Министарство унутрашњих послова — Република Србија
     </p>
     <h1 class="text-xl font-bold text-white">Саобраћајна Полиција</h1>
-    <p class="text-red-100 text-sm mt-0.5">Провера возила, евиденција прекршаја, потражна возила и службеничка мрежа</p>
+    <p class="text-red-100 text-sm mt-0.5">Провера возила, евиденција прекршаја, претрага украдених возила и службеничка мрежа</p>
   </div>
 </div>
 
@@ -49,7 +49,7 @@
         [class.hover:text-gray-700]="activeTab() !== 'stolen'"
         (click)="setTab('stolen')"
       >
-        <i class="pi pi-car text-xs"></i> Потражна возила
+        <i class="pi pi-car text-xs"></i> Претрага украдених возила
         @if (stolenVehicles().length > 0) {
           <span class="ml-1 text-[10px] font-bold bg-red-100 text-red-700 rounded-full px-1.5 py-0.5">
             {{ stolenVehicles().length }}
@@ -169,15 +169,15 @@
               <i class="pi pi-exclamation-triangle text-2xl flex-shrink-0"></i>
               <div>
                 <p class="font-bold text-lg tracking-wide">УКРАДЕНО ВОЗИЛО</p>
-                <p class="text-red-100 text-sm">Возило {{ d.plateNumber }} је пријављено као украдено и активно се потражује.</p>
+                <p class="text-red-100 text-sm">Возило {{ d.plateNumber }} је пријављено као украдено и активно се тражи.</p>
               </div>
             </div>
           } @else {
             <div class="flex items-center gap-4 bg-green-600 text-white rounded-lg px-5 py-4 shadow-sm">
               <i class="pi pi-check-circle text-2xl flex-shrink-0"></i>
               <div>
-                <p class="font-bold text-lg tracking-wide">ВОЗИЛО НИЈЕ ПОТРАЖЕНО</p>
-                <p class="text-green-100 text-sm">Возило {{ d.plateNumber }} није евидентирано у бази потражних возила.</p>
+                <p class="font-bold text-lg tracking-wide">ВОЗИЛО НИЈЕ УКРАДЕНИ</p>
+                <p class="text-green-100 text-sm">Возило {{ d.plateNumber }} није евидентирано у бази украдених возила.</p>
               </div>
             </div>
           }
@@ -276,7 +276,7 @@
     }
 
     <!-- ══════════════════════════════════════════════════════════════
-         TAB: Потражна возила (Stolen)
+         TAB: Украдена возила (Stolen)
     ══════════════════════════════════════════════════════════════ -->
     @if (activeTab() === 'stolen') {
       <div class="space-y-5">
@@ -286,7 +286,7 @@
           <div class="px-5 py-3 bg-[#C6363C] flex items-center justify-between">
             <div class="flex items-center gap-2 text-white">
               <i class="pi pi-car text-sm"></i>
-              <h2 class="text-base font-semibold">Евиденција потражних возила</h2>
+              <h2 class="text-base font-semibold">Евиденција украдених возила</h2>
             </div>
             @if (!isStolenLoading()) {
               <span class="text-xs bg-white/20 text-white rounded-full px-2.5 py-0.5 font-medium">
@@ -302,7 +302,7 @@
             } @else if (stolenVehicles().length === 0) {
               <div class="py-10 text-center">
                 <i class="pi pi-check-circle text-green-400 text-3xl mb-3 block"></i>
-                <p class="text-sm text-gray-500">Тренутно нема потражних возила у евиденцији.</p>
+                <p class="text-sm text-gray-500">Тренутно нема украдених возила у евиденцији.</p>
               </div>
             } @else {
               <div class="overflow-x-auto">

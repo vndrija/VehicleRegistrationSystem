@@ -40,8 +40,8 @@ export class RegisterComponent {
   isLoading = signal<boolean>(false);
 
   roles = [
-    { label: 'User', value: 'User' },
-    { label: 'Admin', value: 'Admin' }
+    { label: 'Корисник', value: 'User' },
+    { label: 'Администратор', value: 'Admin' }
   ];
 
   constructor() {

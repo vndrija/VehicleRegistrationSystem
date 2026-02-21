@@ -3,7 +3,7 @@
     <p-card styleClass="shadow-lg">
       <ng-template pTemplate="header">
         <div class="px-6 pt-6 pb-2">
-          <h2 class="text-2xl font-bold text-gray-800 text-center">Login</h2>
+          <h2 class="text-2xl font-bold text-gray-800 text-center">Пријава</h2>
         </div>
       </ng-template>
 
@@ -13,26 +13,26 @@
         }
 
         <div class="flex flex-col gap-2">
-          <label for="username" class="text-sm font-medium text-gray-700">Username</label>
+          <label for="username" class="text-sm font-medium text-gray-700">Корисничко име</label>
           <input
             pInputText
             id="username"
             formControlName="username"
-            placeholder="Enter your username"
+            placeholder="Унесите корисничко име"
             class="w-full"
             [class.ng-invalid]="loginForm.get('username')?.invalid && loginForm.get('username')?.touched"
           />
           @if (loginForm.get('username')?.invalid && loginForm.get('username')?.touched) {
-            <small class="text-red-500">Username is required</small>
+            <small class="text-red-500">Корисничко име је обавезно</small>
           }
         </div>
 
         <div class="flex flex-col gap-2">
-          <label for="password" class="text-sm font-medium text-gray-700">Password</label>
+          <label for="password" class="text-sm font-medium text-gray-700">Лозинка</label>
           <p-password
             id="password"
             formControlName="password"
-            placeholder="Enter your password"
+            placeholder="Унесите лозинку"
             [toggleMask]="true"
             [feedback]="false"
             styleClass="w-full"
@@ -40,27 +40,27 @@
             [class.ng-invalid]="loginForm.get('password')?.invalid && loginForm.get('password')?.touched"
           ></p-password>
           @if (loginForm.get('password')?.invalid && loginForm.get('password')?.touched) {
-            <small class="text-red-500">Password is required</small>
+            <small class="text-red-500">Лозинка је обавезна</small>
           }
         </div>
 
         <div class="flex flex-col gap-3">
           <p-button
             type="submit"
-            label="Login"
+            label="Пријави се"
             [disabled]="loginForm.invalid || isLoading()"
             [loading]="isLoading()"
             styleClass="w-full"
           ></p-button>
 
           <div class="text-center">
-            <span class="text-sm text-gray-600">Don't have an account? </span>
+            <span class="text-sm text-gray-600">Немате налог? </span>
             <button
               type="button"
               (click)="goToRegister()"
               class="text-sm text-blue-600 hover:text-blue-800 font-medium"
             >
-              Register here
+              Региструјте се овде
             </button>
           </div>
         </div>

@@ -3,7 +3,7 @@
     <p-card styleClass="shadow-lg">
       <ng-template pTemplate="header">
         <div class="px-6 pt-6 pb-2">
-          <h2 class="text-2xl font-bold text-gray-800 text-center">Register</h2>
+          <h2 class="text-2xl font-bold text-gray-800 text-center">Регистрација</h2>
         </div>
       </ng-template>
 
@@ -17,34 +17,34 @@
         }
 
         <div class="flex flex-col gap-2">
-          <label for="username" class="text-sm font-medium text-gray-700">Username</label>
+          <label for="username" class="text-sm font-medium text-gray-700">Корисничко име</label>
           <input
             pInputText
             id="username"
             formControlName="username"
-            placeholder="Enter your username"
+            placeholder="Унесите корисничко име"
             class="w-full"
             [class.ng-invalid]="registerForm.get('username')?.invalid && registerForm.get('username')?.touched"
           />
           @if (registerForm.get('username')?.invalid && registerForm.get('username')?.touched) {
             <small class="text-red-500">
               @if (registerForm.get('username')?.errors?.['required']) {
-                Username is required
+                Корисничко име је обавезно
               }
               @if (registerForm.get('username')?.errors?.['minlength']) {
-                Username must be at least 3 characters
+                Корисничко име мора имати најмање 3 карактера
               }
             </small>
           }
         </div>
 
         <div class="flex flex-col gap-2">
-          <label for="email" class="text-sm font-medium text-gray-700">Email</label>
+          <label for="email" class="text-sm font-medium text-gray-700">Имејл адреса</label>
           <input
             pInputText
             id="email"
             formControlName="email"
-            placeholder="Enter your email"
+            placeholder="Унесите имејл адресу"
             type="email"
             class="w-full"
             [class.ng-invalid]="registerForm.get('email')?.invalid && registerForm.get('email')?.touched"
@@ -52,21 +52,21 @@
           @if (registerForm.get('email')?.invalid && registerForm.get('email')?.touched) {
             <small class="text-red-500">
               @if (registerForm.get('email')?.errors?.['required']) {
-                Email is required
+                Имејл адреса је обавезна
               }
               @if (registerForm.get('email')?.errors?.['email']) {
-                Please enter a valid email address
+                Унесите исправну имејл адресу
               }
             </small>
           }
         </div>
 
         <div class="flex flex-col gap-2">
-          <label for="password" class="text-sm font-medium text-gray-700">Password</label>
+          <label for="password" class="text-sm font-medium text-gray-700">Лозинка</label>
           <p-password
             id="password"
             formControlName="password"
-            placeholder="Enter your password"
+            placeholder="Унесите лозинку"
             [toggleMask]="true"
             [feedback]="true"
             styleClass="w-full"
@@ -76,21 +76,21 @@
           @if (registerForm.get('password')?.invalid && registerForm.get('password')?.touched) {
             <small class="text-red-500">
               @if (registerForm.get('password')?.errors?.['required']) {
-                Password is required
+                Лозинка је обавезна
               }
               @if (registerForm.get('password')?.errors?.['minlength']) {
-                Password must be at least 6 characters
+                Лозинка мора имати најмање 6 карактера
               }
             </small>
           }
         </div>
 
         <div class="flex flex-col gap-2">
-          <label for="confirmPassword" class="text-sm font-medium text-gray-700">Confirm Password</label>
+          <label for="confirmPassword" class="text-sm font-medium text-gray-700">Потврда лозинке</label>
           <p-password
             id="confirmPassword"
             formControlName="confirmPassword"
-            placeholder="Confirm your password"
+            placeholder="Поновите лозинку"
             [toggleMask]="true"
             [feedback]="false"
             styleClass="w-full"
@@ -98,19 +98,19 @@
             [class.ng-invalid]="registerForm.get('confirmPassword')?.invalid && registerForm.get('confirmPassword')?.touched || registerForm.errors?.['passwordMismatch']"
           ></p-password>
           @if (registerForm.get('confirmPassword')?.touched && registerForm.errors?.['passwordMismatch']) {
-            <small class="text-red-500">Passwords do not match</small>
+            <small class="text-red-500">Лозинке се не подударају</small>
           }
         </div>
 
         <div class="flex flex-col gap-2">
-          <label for="role" class="text-sm font-medium text-gray-700">Role</label>
+          <label for="role" class="text-sm font-medium text-gray-700">Улога</label>
           <p-select
             id="role"
             formControlName="role"
             [options]="roles"
             optionLabel="label"
             optionValue="value"
-            placeholder="Select a role"
+            placeholder="Изаберите улогу"
             styleClass="w-full"
           ></p-select>
         </div>
@@ -118,20 +118,20 @@
         <div class="flex flex-col gap-3">
           <p-button
             type="submit"
-            label="Register"
+            label="Региструј се"
             [disabled]="registerForm.invalid || isLoading()"
             [loading]="isLoading()"
             styleClass="w-full"
           ></p-button>
 
           <div class="text-center">
-            <span class="text-sm text-gray-600">Already have an account? </span>
+            <span class="text-sm text-gray-600">Већ имате налог? </span>
             <button
               type="button"
               (click)="goToLogin()"
               class="text-sm text-blue-600 hover:text-blue-800 font-medium"
             >
-              Login here
+              Пријавите се овде
             </button>
           </div>
         </div>

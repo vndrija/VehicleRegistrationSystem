@@ -1,5 +1,5 @@
 import { Component, inject } from '@angular/core';
-import { Router } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 import { CommonModule } from '@angular/common';
 
 import { AuthService } from '../../services/auth.service';
@@ -16,7 +16,7 @@ interface VehicleService {
 @Component({
   selector: 'app-home',
   standalone: true,
-  imports: [CommonModule, NavbarComponent],
+  imports: [CommonModule, NavbarComponent, RouterLink],
   templateUrl: './home.component.html',
   styleUrl: './home.component.css'
 })
@@ -49,7 +49,7 @@ export class HomeComponent {
   onServiceClick(service: VehicleService): void {
     if (service.comingSoon) return;
     if (!this.authService.isAuthenticated()) {
-      this.authService.setReturnUrl(service.route);
+      this.authService.setReturnUrl('/mup-vozila');
       this.router.navigate(['/login']);
     } else {
       this.router.navigate([service.route]);

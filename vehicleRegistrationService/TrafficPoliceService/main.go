@@ -73,12 +73,10 @@ func main() {
 		api.GET("/officers/:badge", handlers.GetOfficerByBadge)
 
 		// --- Traffic Violations ---
-		// POST /api/police/violations -> Issue a new ticket
 		api.POST("/violations", handlers.IssueViolation)
-		// GET /api/police/violations/plate/:plate -> Get history for a car
-		api.GET("/violations/plate/:plate", handlers.GetViolationsByPlate) // Note the :plate param
-		// PUT /api/police/violations/:id/pay -> Mark as paid
+		api.GET("/violations/plate/:plate", handlers.GetViolationsByPlate)
 		api.PUT("/violations/:id/pay", handlers.PayViolation)
+		api.GET("/violations/:id/pdf", handlers.DownloadViolationPDF)
 
 		// --- Accidents ---
 		// POST /api/police/accidents -> Report crash & notify VehicleService

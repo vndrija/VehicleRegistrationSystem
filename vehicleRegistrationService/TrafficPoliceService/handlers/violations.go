@@ -1,10 +1,12 @@
 package handlers
 
 import (
+	"fmt"
 	"net/http"
 	"time"
 	"trafficpolice/database"
 	"trafficpolice/models"
+	"trafficpolice/services"
 
 	"github.com/gin-gonic/gin"
 )
@@ -58,21 +60,61 @@ func GetViolationsByPlate(c *gin.Context) {
 	c.JSON(http.StatusOK, violations)
 }
 
-// PayViolation updates the status of a ticket to PAID.
+// PayViolation updates status AND sends email
 func PayViolation(c *gin.Context) {
-	id := c.Param("id") // The primary key ID of the violation
-
+	id := c.Param("id")
 	var violation models.Violation
 
-	// 1. Find the violation first
 	if err := database.DB.First(&violation, id).Error; err != nil {
 		c.JSON(http.StatusNotFound, gin.H{"error": "Violation not found"})
 		return
 	}
 
-	// 2. Update the status field
-	violation.Status = "PAID"
+	// Update Status
+	violation.Status = models.ViolationPaid
 	database.DB.Save(&violation)
 
+	// --- NEW: Send Email Notification ---
+	if violation.OffenderEmail != "" {
+		subject := fmt.Sprintf("Payment Confirmation - Ticket #%d", violation.ID)
+		body := fmt.Sprintf("Dear Driver,\n\nWe confirm that Violation #%d for plate %s has been successfully PAID.\n\nThank you,\nTraffic Police", violation.ID, violation.VehiclePlate)
+
+		// Send async so we don't block the UI
+		go func() {
+			err := services.SendEmail(violation.OffenderEmail, subject, body)
+			if err != nil {
+				fmt.Printf("Failed to send email: %v\n", err)
+			}
+		}()
+	}
+	// ------------------------------------
+
 	c.JSON(http.StatusOK, gin.H{"message": "Violation paid successfully", "data": violation})
+}
+
+// DownloadViolationPDF generates and serves the PDF
+func DownloadViolationPDF(c *gin.Context) {
+	id := c.Param("id")
+	var violation models.Violation
+
+	// 1. Find Data
+	if err := database.DB.First(&violation, id).Error; err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "Violation not found"})
+		return
+	}
+
+	// 2. Generate PDF
+	pdfBytes, err := services.GenerateViolationPDF(&violation)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to generate PDF"})
+		return
+	}
+
+	// 3. Serve File
+	// These headers tell the browser "This is a file, download it"
+	c.Header("Content-Disposition", fmt.Sprintf("attachment; filename=violation_%d.pdf", violation.ID))
+	c.Header("Content-Type", "application/pdf")
+	c.Header("Content-Length", fmt.Sprintf("%d", len(pdfBytes)))
+
+	c.Data(http.StatusOK, "application/pdf", pdfBytes)
 }

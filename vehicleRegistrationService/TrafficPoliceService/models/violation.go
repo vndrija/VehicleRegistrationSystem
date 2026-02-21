@@ -12,17 +12,16 @@ type Violation struct {
 	VehiclePlate string `gorm:"type:nvarchar(20);index;not null" json:"vehiclePlate"`
 	OfficerID    uint   `json:"officerId"`
 
-	// UPDATED: Using the Enum type
 	Type ViolationType `gorm:"type:nvarchar(50)" json:"type"`
 
 	Description string  `gorm:"type:nvarchar(max)" json:"description"`
 	Location    string  `gorm:"type:nvarchar(255)" json:"location"`
 	FineAmount  float64 `json:"fineAmount"`
 
-	// UPDATED: Using the Enum type
 	Status ViolationStatus `gorm:"type:nvarchar(20)" json:"status"`
 
 	ViolationDate time.Time `json:"violationDate"`
+	OffenderEmail string    `gorm:"type:nvarchar(100)" json:"offenderEmail"`
 }
 
 // BeforeSave is a GORM Hook. It runs automatically before inserting/updating.

@@ -6,8 +6,6 @@ import { CommonModule } from '@angular/common';
 import { InputTextModule } from 'primeng/inputtext';
 import { PasswordModule } from 'primeng/password';
 import { ButtonModule } from 'primeng/button';
-import { CardModule } from 'primeng/card';
-import { MessageModule } from 'primeng/message';
 import { SelectModule } from 'primeng/select';
 
 import { AuthService } from '../../services/auth.service';
@@ -22,8 +20,6 @@ import { RegisterRequest } from '../../models/auth.models';
     InputTextModule,
     PasswordModule,
     ButtonModule,
-    CardModule,
-    MessageModule,
     SelectModule
   ],
   templateUrl: './register.component.html',
@@ -97,5 +93,9 @@ export class RegisterComponent {
 
   goToLogin(): void {
     this.router.navigate(['/login']);
+  }
+
+  goToHome(): void {
+    this.router.navigate(['/']);
   }
 }

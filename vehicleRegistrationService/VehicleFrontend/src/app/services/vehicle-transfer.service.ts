@@ -38,6 +38,6 @@ export class VehicleTransferService {
   }
 
   getOwnershipHistory(vehicleId: number): Observable<VehicleOwnershipHistoryResponse> {
-    return this.http.get<VehicleOwnershipHistoryResponse>(`http://localhost:5293/api/Vehicles/${vehicleId}/ownership-history`);
+    return this.http.get<VehicleOwnershipHistoryResponse>(`${environment.apiConfig.vehicleService}/${vehicleId}/ownership-history`);
   }
 }

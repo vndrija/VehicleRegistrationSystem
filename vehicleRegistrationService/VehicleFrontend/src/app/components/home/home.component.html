@@ -1,54 +1,80 @@
-<div class="min-h-screen bg-gray-50">
+<div class="min-h-screen bg-[#EEF2F8]">
   <app-navbar></app-navbar>
 
-  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-    <p-card>
-      <ng-template pTemplate="header">
-        <div class="px-6 pt-6 pb-2">
-          <h2 class="text-2xl font-bold text-gray-800">Услуге регистрације возила</h2>
-          <p class="text-gray-600 mt-2">Изаберите услугу коју желите да користите</p>
-        </div>
-      </ng-template>
-
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-        @for (service of services; track service.id) {
-          <div
-            class="p-4 border border-gray-200 rounded-lg hover:bg-gray-50 cursor-pointer transition-colors"
-            (click)="onServiceClick(service)"
-          >
-            <div class="flex items-start gap-3">
-              <div class="flex-shrink-0 mt-1">
-                <span class="inline-flex items-center justify-center w-6 h-6 text-sm font-semibold text-blue-600 bg-blue-100 rounded-full">
-                  {{ service.id }}
-                </span>
-              </div>
-              <div class="flex-1">
-                <h3 class="text-base font-medium text-gray-900 hover:text-blue-600">
-                  {{ service.title }}
-                </h3>
-              </div>
-              <div class="flex-shrink-0">
-                <i class="pi pi-chevron-right text-gray-400"></i>
-              </div>
-            </div>
-          </div>
-        }
-      </div>
-
-      <ng-template pTemplate="footer">
-        @if (!isAuthenticated()) {
-          <div class="bg-blue-50 border border-blue-200 rounded-lg p-4">
-            <div class="flex items-center gap-3">
-              <i class="pi pi-info-circle text-blue-600 text-xl"></i>
-              <div class="flex-1">
-                <p class="text-sm text-blue-800">
-                  Потребна је пријава да бисте користили услуге. Молимо вас да се пријавите или региструјете користећи дугмад у горњем десном углу.
-                </p>
-              </div>
-            </div>
-          </div>
-        }
-      </ng-template>
-    </p-card>
+  <!-- Serbian tricolor accent stripe -->
+  <div class="flex" style="height: 4px;">
+    <div class="flex-1 bg-[#C6363C]"></div>
+    <div class="flex-1 bg-[#003893]"></div>
+    <div class="flex-1 bg-gray-100 border-b border-gray-300"></div>
   </div>
+
+  <!-- Page header -->
+  <div class="bg-[#003893]">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-7">
+      <p class="text-[10px] font-semibold tracking-[0.15em] uppercase text-blue-200 mb-2">
+        Министарство унутрашњих послова — Република Србија
+      </p>
+      <h1 class="text-xl font-bold text-white">Услуге регистрације возила</h1>
+      <p class="text-blue-100 text-sm mt-1">Изаберите услугу коју желите да користите</p>
+    </div>
+  </div>
+
+  <!-- Services -->
+  <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-2">
+      @for (service of services; track service.id) {
+        <button
+          type="button"
+          class="group flex items-center gap-3 w-full text-left bg-white border border-gray-200 rounded px-4 py-3.5 transition-all duration-150"
+          [class.hover:border-[#003893]]="!service.comingSoon"
+          [class.hover:shadow-sm]="!service.comingSoon"
+          [class.cursor-pointer]="!service.comingSoon"
+          [class.cursor-default]="service.comingSoon"
+          [class.opacity-60]="service.comingSoon"
+          (click)="onServiceClick(service)"
+        >
+          <span class="flex-shrink-0 w-7 h-7 flex items-center justify-center rounded text-xs font-bold bg-[#EEF2F8] text-[#003893]"
+            [class.group-hover:bg-[#003893]]="!service.comingSoon"
+            [class.group-hover:text-white]="!service.comingSoon"
+          >
+            {{ service.id }}
+          </span>
+          <i class="pi {{ service.icon }} flex-shrink-0 text-gray-400 text-sm"
+            [class.group-hover:text-[#003893]]="!service.comingSoon"
+          ></i>
+          <span class="flex-1 text-sm text-gray-800 leading-snug">
+            {{ service.title }}
+          </span>
+          @if (service.comingSoon) {
+            <span class="flex-shrink-0 text-[10px] font-semibold tracking-wide uppercase bg-gray-100 text-gray-400 border border-gray-200 rounded px-1.5 py-0.5">
+              Ускоро
+            </span>
+          } @else {
+            <i class="pi pi-chevron-right flex-shrink-0 text-gray-300 group-hover:text-[#003893] text-xs transition-colors duration-150"></i>
+          }
+        </button>
+      }
+    </div>
+
+    @if (!isAuthenticated()) {
+      <div class="mt-5 flex items-start gap-3 bg-white border-l-4 border-[#C6363C] rounded px-4 py-3.5">
+        <i class="pi pi-info-circle text-[#C6363C] text-base mt-0.5 flex-shrink-0"></i>
+        <p class="text-sm text-gray-600 leading-relaxed">
+          Потребна је пријава да бисте користили услуге. Молимо вас да се пријавите или региструјете користећи дугмад у горњем десном углу.
+        </p>
+      </div>
+    }
+  </main>
+
+  <!-- Footer -->
+  <footer class="mt-8 border-t border-gray-200 bg-white">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex items-center justify-between">
+      <p class="text-xs text-gray-400">© 2026 Министарство унутрашњих послова Републике Србије</p>
+      <div class="flex items-center gap-0.5">
+        <div class="w-4 h-2.5 bg-[#C6363C] rounded-sm"></div>
+        <div class="w-4 h-2.5 bg-[#003893] rounded-sm"></div>
+        <div class="w-4 h-2.5 bg-gray-200 rounded-sm border border-gray-300"></div>
+      </div>
+    </div>
+  </footer>
 </div>

@@ -2,18 +2,34 @@
 
 <p-toast></p-toast>
 
-<div class="min-h-screen bg-gray-50 py-8">
+<!-- Tricolor stripe -->
+<div class="flex" style="height: 4px">
+  <div class="flex-1 bg-[#C6363C]"></div>
+  <div class="flex-1 bg-[#003893]"></div>
+  <div class="flex-1 bg-gray-300"></div>
+</div>
+
+<!-- Page header -->
+<div class="bg-[#003893]">
+  <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+    <p class="text-[10px] font-semibold tracking-[0.15em] uppercase text-blue-200 mb-1">
+      Министарство унутрашњих послова — Република Србија
+    </p>
+    <h1 class="text-xl font-bold text-white">Упис у јединствени регистар возила</h1>
+  </div>
+</div>
+
+<div class="min-h-screen bg-[#EEF2F8] py-6">
   <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-    <h1 class="text-3xl font-bold text-gray-900 mb-8">Упис у јединствени регистар возила</h1>
 
     @if (isLoadingVehicles()) {
-      <div class="text-center py-8">
-        <i class="pi pi-spin pi-spinner text-4xl text-blue-600"></i>
+      <div class="text-center py-12">
+        <i class="pi pi-spin pi-spinner text-4xl text-[#003893]"></i>
         <p class="mt-2 text-gray-600">Учитавање возила...</p>
       </div>
     } @else if (userVehicles().length === 0) {
-      <p-card>
-        <div class="text-center py-8">
+      <div class="bg-white border border-gray-200 rounded shadow-sm">
+        <div class="text-center py-12">
           <i class="pi pi-car text-6xl text-gray-300 mb-4"></i>
           <p class="text-gray-600 text-lg mb-4">Немате нерегистрованих возила</p>
           <p-button
@@ -22,150 +38,147 @@
             routerLink="/"
           ></p-button>
         </div>
-      </p-card>
+      </div>
     } @else {
-      <p-card>
-        <ng-template pTemplate="header">
-          <div class="p-4 bg-blue-600 text-white">
-            <h2 class="text-xl font-semibold">Подношење захтева за регистрацију</h2>
-          </div>
-        </ng-template>
+      <div class="bg-white border border-gray-200 rounded shadow-sm overflow-hidden">
+        <div class="bg-[#003893] px-4 py-3 text-white">
+          <h2 class="text-base font-semibold">Подношење захтева за регистрацију</h2>
+        </div>
 
-        <form [formGroup]="registrationForm" class="space-y-6">
-          <div>
-            <label for="vehicleId" class="block text-sm font-medium text-gray-700 mb-2">
-              Изаберите возило *
-            </label>
-            <p-select
-              inputId="vehicleId"
-              formControlName="vehicleId"
-              [options]="userVehicles()"
-              optionLabel="registrationNumber"
-              optionValue="id"
-              placeholder="Изаберите возило"
-              styleClass="w-full"
-            >
-              <ng-template let-vehicle pTemplate="item">
-                <div class="flex flex-col">
-                  <span class="font-semibold">{{ vehicle.registrationNumber }}</span>
-                  <span class="text-sm text-gray-600">{{ vehicle.make }} {{ vehicle.model }} ({{ vehicle.year }})</span>
+        <div class="p-6">
+          <form [formGroup]="registrationForm" class="space-y-6">
+            <div>
+              <label for="vehicleId" class="block text-sm font-medium text-gray-700 mb-2">
+                Изаберите возило *
+              </label>
+              <p-select
+                inputId="vehicleId"
+                formControlName="vehicleId"
+                [options]="userVehicles()"
+                optionLabel="registrationNumber"
+                optionValue="id"
+                placeholder="Изаберите возило"
+                styleClass="w-full"
+              >
+                <ng-template let-vehicle pTemplate="item">
+                  <div class="flex flex-col">
+                    <span class="font-semibold">{{ vehicle.registrationNumber }}</span>
+                    <span class="text-sm text-gray-600">{{ vehicle.make }} {{ vehicle.model }} ({{ vehicle.year }})</span>
+                  </div>
+                </ng-template>
+              </p-select>
+              @if (registrationForm.get('vehicleId')?.invalid && registrationForm.get('vehicleId')?.touched) {
+                <small class="text-[#C6363C]">Морате изабрати возило</small>
+              }
+            </div>
+
+            <div>
+              <label for="technicalInspectionDate" class="block text-sm font-medium text-gray-700 mb-2">
+                Датум техничког прегледа *
+              </label>
+              <p-datepicker
+                inputId="technicalInspectionDate"
+                formControlName="technicalInspectionDate"
+                dateFormat="dd.mm.yy"
+                [showIcon]="true"
+                [maxDate]="maxDate"
+                [minDate]="minDate"
+                placeholder="Изаберите датум"
+                styleClass="w-full"
+              ></p-datepicker>
+              <small class="text-gray-500">Технички преглед не сме бити старији од 30 дана</small>
+              @if (registrationForm.get('technicalInspectionDate')?.invalid && registrationForm.get('technicalInspectionDate')?.touched) {
+                <small class="text-[#C6363C] block">Морате изабрати датум техничког прегледа</small>
+              }
+            </div>
+
+            <div class="border-t border-gray-200 pt-6">
+              <h3 class="text-sm font-semibold text-gray-900 uppercase tracking-wide mb-4">Потребна документа</h3>
+
+              <div class="space-y-4">
+                <div>
+                  <label class="block text-sm font-medium text-gray-700 mb-2">Доказ о осигурању *</label>
+                  <p-fileupload
+                    mode="basic"
+                    [auto]="false"
+                    [chooseLabel]="insuranceDoc() ? insuranceDoc()!.name : 'Изаберите документ'"
+                    [maxFileSize]="5000000"
+                    accept="application/pdf,image/*"
+                    (onSelect)="onInsuranceDocSelect($event)"
+                    styleClass="w-full"
+                  ></p-fileupload>
+                  @if (insuranceDoc()) {
+                    <small class="text-green-600">
+                      <i class="pi pi-check-circle mr-1"></i>
+                      Документ учитан: {{ insuranceDoc()!.name }}
+                    </small>
+                  }
                 </div>
-              </ng-template>
-            </p-select>
-            @if (registrationForm.get('vehicleId')?.invalid && registrationForm.get('vehicleId')?.touched) {
-              <small class="text-red-600">Морате изабрати возило</small>
-            }
-          </div>
 
-          <div>
-            <label for="technicalInspectionDate" class="block text-sm font-medium text-gray-700 mb-2">
-              Датум техничког прегледа *
-            </label>
-            <p-datepicker
-              inputId="technicalInspectionDate"
-              formControlName="technicalInspectionDate"
-              dateFormat="dd.mm.yy"
-              [showIcon]="true"
-              [maxDate]="maxDate"
-              [minDate]="minDate"
-              placeholder="Изаберите датум"
-              styleClass="w-full"
-            ></p-datepicker>
-            <small class="text-gray-500">Технички преглед не сме бити старији од 30 дана</small>
-            @if (registrationForm.get('technicalInspectionDate')?.invalid && registrationForm.get('technicalInspectionDate')?.touched) {
-              <small class="text-red-600 block">Морате изабрати датум техничког прегледа</small>
-            }
-          </div>
+                <div>
+                  <label class="block text-sm font-medium text-gray-700 mb-2">Доказ о техничком прегледу *</label>
+                  <p-fileupload
+                    mode="basic"
+                    [auto]="false"
+                    [chooseLabel]="inspectionDoc() ? inspectionDoc()!.name : 'Изаберите документ'"
+                    [maxFileSize]="5000000"
+                    accept="application/pdf,image/*"
+                    (onSelect)="onInspectionDocSelect($event)"
+                    styleClass="w-full"
+                  ></p-fileupload>
+                  @if (inspectionDoc()) {
+                    <small class="text-green-600">
+                      <i class="pi pi-check-circle mr-1"></i>
+                      Документ учитан: {{ inspectionDoc()!.name }}
+                    </small>
+                  }
+                </div>
 
-          <div class="border-t pt-6">
-            <h3 class="text-lg font-semibold text-gray-900 mb-4">Потребна документа</h3>
-
-            <div class="space-y-4">
-              <div>
-                <label class="block text-sm font-medium text-gray-700 mb-2">
-                  Доказ о осигурању *
-                </label>
-                <p-fileupload
-                  mode="basic"
-                  [auto]="false"
-                  [chooseLabel]="insuranceDoc() ? insuranceDoc()!.name : 'Изаберите документ'"
-                  [maxFileSize]="5000000"
-                  accept="application/pdf,image/*"
-                  (onSelect)="onInsuranceDocSelect($event)"
-                  styleClass="w-full"
-                ></p-fileupload>
-                @if (insuranceDoc()) {
-                  <small class="text-green-600">
-                    <i class="pi pi-check-circle mr-1"></i>
-                    Документ учитан: {{ insuranceDoc()!.name }}
-                  </small>
-                }
-              </div>
-
-              <div>
-                <label class="block text-sm font-medium text-gray-700 mb-2">
-                  Доказ о техничком прегледу *
-                </label>
-                <p-fileupload
-                  mode="basic"
-                  [auto]="false"
-                  [chooseLabel]="inspectionDoc() ? inspectionDoc()!.name : 'Изаберите документ'"
-                  [maxFileSize]="5000000"
-                  accept="application/pdf,image/*"
-                  (onSelect)="onInspectionDocSelect($event)"
-                  styleClass="w-full"
-                ></p-fileupload>
-                @if (inspectionDoc()) {
-                  <small class="text-green-600">
-                    <i class="pi pi-check-circle mr-1"></i>
-                    Документ учитан: {{ inspectionDoc()!.name }}
-                  </small>
-                }
-              </div>
-
-              <div>
-                <label class="block text-sm font-medium text-gray-700 mb-2">
-                  Доказ о идентитету *
-                </label>
-                <p-fileupload
-                  mode="basic"
-                  [auto]="false"
-                  [chooseLabel]="identityDoc() ? identityDoc()!.name : 'Изаберите документ'"
-                  [maxFileSize]="5000000"
-                  accept="application/pdf,image/*"
-                  (onSelect)="onIdentityDocSelect($event)"
-                  styleClass="w-full"
-                ></p-fileupload>
-                @if (identityDoc()) {
-                  <small class="text-green-600">
-                    <i class="pi pi-check-circle mr-1"></i>
-                    Документ учитан: {{ identityDoc()!.name }}
-                  </small>
-                }
+                <div>
+                  <label class="block text-sm font-medium text-gray-700 mb-2">Доказ о идентитету *</label>
+                  <p-fileupload
+                    mode="basic"
+                    [auto]="false"
+                    [chooseLabel]="identityDoc() ? identityDoc()!.name : 'Изаберите документ'"
+                    [maxFileSize]="5000000"
+                    accept="application/pdf,image/*"
+                    (onSelect)="onIdentityDocSelect($event)"
+                    styleClass="w-full"
+                  ></p-fileupload>
+                  @if (identityDoc()) {
+                    <small class="text-green-600">
+                      <i class="pi pi-check-circle mr-1"></i>
+                      Документ учитан: {{ identityDoc()!.name }}
+                    </small>
+                  }
+                </div>
               </div>
             </div>
-          </div>
 
-          @if (errorMessage()) {
-            <p-message severity="error" [text]="errorMessage()"></p-message>
-          }
+            @if (errorMessage()) {
+              <div class="flex items-start gap-2 bg-red-50 border-l-4 border-[#C6363C] px-3 py-2.5 rounded-r">
+                <i class="pi pi-exclamation-circle text-[#C6363C] text-sm mt-0.5 flex-shrink-0"></i>
+                <span class="text-sm text-red-700">{{ errorMessage() }}</span>
+              </div>
+            }
 
-          <div class="flex gap-2 pt-4">
-            <p-button
-              label="Поднеси захтев"
-              icon="pi pi-send"
-              [loading]="isLoading()"
-              (onClick)="submitRequest()"
-            ></p-button>
-            <p-button
-              label="Откажи"
-              icon="pi pi-times"
-              severity="secondary"
-              routerLink="/"
-            ></p-button>
-          </div>
-        </form>
-      </p-card>
+            <div class="flex gap-2 pt-2">
+              <p-button
+                label="Поднеси захтев"
+                icon="pi pi-send"
+                [loading]="isLoading()"
+                (onClick)="submitRequest()"
+              ></p-button>
+              <p-button
+                label="Откажи"
+                icon="pi pi-times"
+                severity="secondary"
+                routerLink="/"
+              ></p-button>
+            </div>
+          </form>
+        </div>
+      </div>
     }
   </div>
 </div>

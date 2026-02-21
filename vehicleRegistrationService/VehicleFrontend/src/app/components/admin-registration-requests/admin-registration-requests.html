@@ -2,149 +2,160 @@
 
 <p-toast></p-toast>
 
-<div class="min-h-screen bg-gray-50 py-8">
+<!-- Tricolor stripe -->
+<div class="flex" style="height: 4px">
+  <div class="flex-1 bg-[#C6363C]"></div>
+  <div class="flex-1 bg-[#003893]"></div>
+  <div class="flex-1 bg-gray-300"></div>
+</div>
+
+<!-- Page header -->
+<div class="bg-[#003893]">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+    <p class="text-[10px] font-semibold tracking-[0.15em] uppercase text-blue-200 mb-1">
+      Министарство унутрашњих послова — Република Србија
+    </p>
+    <h1 class="text-xl font-bold text-white">Захтеви за регистрацију возила</h1>
+  </div>
+</div>
+
+<div class="min-h-screen bg-[#EEF2F8] py-6">
   <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-    <h1 class="text-3xl font-bold text-gray-900 mb-8">Захтеви за регистрацију возила</h1>
 
-    <p-card>
-      <ng-template pTemplate="header">
-        <div class="p-4 bg-blue-600 text-white flex justify-between items-center">
-          <h2 class="text-xl font-semibold">Преглед захтева</h2>
-          <div class="flex gap-2">
-            <p-button
-              label="Сви"
-              [outlined]="true"
-              severity="secondary"
-              size="small"
-              (onClick)="showAllRequests()"
-            ></p-button>
-            <p-button
-              label="На чекању"
-              [outlined]="true"
-              severity="danger"
-              size="small"
-              (onClick)="filterByStatus('Pending')"
-            ></p-button>
-            <p-button
-              label="Одобрено"
-              [outlined]="true"
-              severity="success"
-              size="small"
-              (onClick)="filterByStatus('Approved')"
-            ></p-button>
-            <p-button
-              label="Одбијено"
-              [outlined]="true"
-              severity="danger"
-              size="small"
-              (onClick)="filterByStatus('Rejected')"
-            ></p-button>
+    <div class="bg-white border border-gray-200 rounded shadow-sm overflow-hidden">
+      <div class="bg-[#003893] px-4 py-3 text-white flex justify-between items-center">
+        <h2 class="text-base font-semibold">Преглед захтева</h2>
+        <div class="flex gap-2">
+          <p-button
+            label="Сви"
+            [outlined]="true"
+            severity="secondary"
+            size="small"
+            (onClick)="showAllRequests()"
+          ></p-button>
+          <p-button
+            label="На чекању"
+            [outlined]="true"
+            severity="danger"
+            size="small"
+            (onClick)="filterByStatus('Pending')"
+          ></p-button>
+          <p-button
+            label="Одобрено"
+            [outlined]="true"
+            severity="success"
+            size="small"
+            (onClick)="filterByStatus('Approved')"
+          ></p-button>
+          <p-button
+            label="Одбијено"
+            [outlined]="true"
+            severity="danger"
+            size="small"
+            (onClick)="filterByStatus('Rejected')"
+          ></p-button>
+        </div>
+      </div>
+
+      <div class="p-4">
+        @if (isLoading()) {
+          <div class="text-center py-8">
+            <i class="pi pi-spin pi-spinner text-4xl text-[#003893]"></i>
+            <p class="mt-2 text-gray-600">Учитавање захтева...</p>
           </div>
-        </div>
-      </ng-template>
-
-      @if (isLoading()) {
-        <div class="text-center py-8">
-          <i class="pi pi-spin pi-spinner text-4xl text-blue-600"></i>
-          <p class="mt-2 text-gray-600">Учитавање захтева...</p>
-        </div>
-      } @else if (requests().length === 0) {
-        <div class="text-center py-8">
-          <i class="pi pi-inbox text-6xl text-gray-300 mb-4"></i>
-          <p class="text-gray-600 text-lg">Нема захтева</p>
-        </div>
-      } @else {
-        <p-table [value]="requests()" [tableStyle]="{ 'min-width': '60rem' }">
-          <ng-template pTemplate="header">
-            <tr>
-              <th>ID</th>
-              <th>Тип</th>
-              <th>Возило</th>
-              <th>Власник</th>
-              <th>Датум техничког прегледа</th>
-              <th>Статус</th>
-              <th>Поднето</th>
-              <th class="text-center">Акције</th>
-            </tr>
-          </ng-template>
-          <ng-template pTemplate="body" let-request>
-            <tr>
-              <td>{{ request.id }}</td>
-              <td>
-                <p-tag
-                  [value]="getTypeLabel(request.type)"
-                  [severity]="getTypeSeverity(request.type)"
-                ></p-tag>
-              </td>
-              <td>
-                <div class="flex flex-col">
-                  <span class="font-semibold">{{ request.vehicle?.registrationNumber }}</span>
-                  <span class="text-sm text-gray-600">
-                    {{ request.vehicle?.make }} {{ request.vehicle?.model }} ({{ request.vehicle?.year }})
-                  </span>
-                </div>
-              </td>
-              <td>{{ request.vehicle?.ownerName }}</td>
-              <td>{{ formatDate(request.technicalInspectionDate) }}</td>
-              <td>
-                <p-tag
-                  [value]="getStatusLabel(request.status)"
-                  [severity]="getStatusSeverity(request.status)"
-                ></p-tag>
-              </td>
-              <td>{{ formatDateTime(request.createdAt) }}</td>
-              <td>
-                @if (request.status === 'Pending') {
-                  <div class="flex gap-2 justify-center">
-                    <p-button
-                      icon="pi pi-check"
-                      label="Одобри"
-                      severity="success"
-                      size="small"
-                      [loading]="isProcessing()"
-                      (onClick)="approveRequest(request)"
-                    ></p-button>
-                    <p-button
-                      icon="pi pi-times"
-                      label="Одбиј"
-                      severity="danger"
-                      size="small"
-                      [loading]="isProcessing()"
-                      (onClick)="openRejectDialog(request)"
-                    ></p-button>
+        } @else if (requests().length === 0) {
+          <div class="text-center py-8">
+            <i class="pi pi-inbox text-5xl text-gray-300 mb-3"></i>
+            <p class="text-gray-600">Нема захтева</p>
+          </div>
+        } @else {
+          <p-table [value]="requests()" [tableStyle]="{ 'min-width': '60rem' }">
+            <ng-template pTemplate="header">
+              <tr>
+                <th>ID</th>
+                <th>Тип</th>
+                <th>Возило</th>
+                <th>Власник</th>
+                <th>Датум техничког прегледа</th>
+                <th>Статус</th>
+                <th>Поднето</th>
+                <th class="text-center">Акције</th>
+              </tr>
+            </ng-template>
+            <ng-template pTemplate="body" let-request>
+              <tr>
+                <td>{{ request.id }}</td>
+                <td>
+                  <p-tag
+                    [value]="getTypeLabel(request.type)"
+                    [severity]="getTypeSeverity(request.type)"
+                  ></p-tag>
+                </td>
+                <td>
+                  <div class="flex flex-col">
+                    <span class="font-semibold">{{ request.vehicle?.registrationNumber }}</span>
+                    <span class="text-sm text-gray-600">
+                      {{ request.vehicle?.make }} {{ request.vehicle?.model }} ({{ request.vehicle?.year }})
+                    </span>
                   </div>
-                } @else if (request.status === 'Approved') {
-                  <div class="text-center text-sm">
-                    <div class="text-green-600">
-                      <i class="pi pi-check-circle mr-1"></i>
-                      Одобрио: {{ request.reviewedBy }}
+                </td>
+                <td>{{ request.vehicle?.ownerName }}</td>
+                <td>{{ formatDate(request.technicalInspectionDate) }}</td>
+                <td>
+                  <p-tag
+                    [value]="getStatusLabel(request.status)"
+                    [severity]="getStatusSeverity(request.status)"
+                  ></p-tag>
+                </td>
+                <td>{{ formatDateTime(request.createdAt) }}</td>
+                <td>
+                  @if (request.status === 'Pending') {
+                    <div class="flex gap-2 justify-center">
+                      <p-button
+                        icon="pi pi-check"
+                        label="Одобри"
+                        severity="success"
+                        size="small"
+                        [loading]="isProcessing()"
+                        (onClick)="approveRequest(request)"
+                      ></p-button>
+                      <p-button
+                        icon="pi pi-times"
+                        label="Одбиј"
+                        severity="danger"
+                        size="small"
+                        [loading]="isProcessing()"
+                        (onClick)="openRejectDialog(request)"
+                      ></p-button>
                     </div>
-                    <div class="text-gray-500">
-                      {{ formatDateTime(request.reviewedAt!) }}
-                    </div>
-                  </div>
-                } @else if (request.status === 'Rejected') {
-                  <div class="text-center text-sm">
-                    <div class="text-red-600">
-                      <i class="pi pi-times-circle mr-1"></i>
-                      Одбио: {{ request.reviewedBy }}
-                    </div>
-                    <div class="text-gray-500">
-                      {{ formatDateTime(request.reviewedAt!) }}
-                    </div>
-                    @if (request.rejectionReason) {
-                      <div class="text-gray-700 italic mt-1">
-                        "{{ request.rejectionReason }}"
+                  } @else if (request.status === 'Approved') {
+                    <div class="text-center text-sm">
+                      <div class="text-green-600">
+                        <i class="pi pi-check-circle mr-1"></i>
+                        Одобрио: {{ request.reviewedBy }}
                       </div>
-                    }
-                  </div>
-                }
-              </td>
-            </tr>
-          </ng-template>
-        </p-table>
-      }
-    </p-card>
+                      <div class="text-gray-500">{{ formatDateTime(request.reviewedAt!) }}</div>
+                    </div>
+                  } @else if (request.status === 'Rejected') {
+                    <div class="text-center text-sm">
+                      <div class="text-[#C6363C]">
+                        <i class="pi pi-times-circle mr-1"></i>
+                        Одбио: {{ request.reviewedBy }}
+                      </div>
+                      <div class="text-gray-500">{{ formatDateTime(request.reviewedAt!) }}</div>
+                      @if (request.rejectionReason) {
+                        <div class="text-gray-700 italic mt-1">"{{ request.rejectionReason }}"</div>
+                      }
+                    </div>
+                  }
+                </td>
+              </tr>
+            </ng-template>
+          </p-table>
+        }
+      </div>
+    </div>
+
   </div>
 </div>
 
@@ -170,7 +181,7 @@
         class="w-full"
       ></textarea>
       @if (rejectForm.get('rejectionReason')?.invalid && rejectForm.get('rejectionReason')?.touched) {
-        <small class="text-red-600">Разлог одбијања је обавезан (минимум 10 карактера)</small>
+        <small class="text-[#C6363C]">Разлог одбијања је обавезан (минимум 10 карактера)</small>
       }
     </div>
   </form>

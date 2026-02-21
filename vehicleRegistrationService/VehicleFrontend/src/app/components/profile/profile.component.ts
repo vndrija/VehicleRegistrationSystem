@@ -7,14 +7,11 @@ import { CardModule } from 'primeng/card';
 import { ButtonModule } from 'primeng/button';
 import { InputTextModule } from 'primeng/inputtext';
 import { PasswordModule } from 'primeng/password';
-import { MessageModule } from 'primeng/message';
 import { DialogModule } from 'primeng/dialog';
 import { ConfirmDialogModule } from 'primeng/confirmdialog';
 import { SelectModule } from 'primeng/select';
 import { ConfirmationService, MessageService } from 'primeng/api';
 import { ToastModule } from 'primeng/toast';
-import { DatePickerModule } from 'primeng/datepicker';
-import { TimelineModule } from 'primeng/timeline';
 import { AuthService } from '../../services/auth.service';
 import { VehicleService } from '../../services/vehicle.service';
 import { VehicleTransferService } from '../../services/vehicle-transfer.service';
@@ -35,13 +32,10 @@ import { VehicleOwnershipHistory } from '../../models/vehicle-transfer.models';
     ButtonModule,
     InputTextModule,
     PasswordModule,
-    MessageModule,
     DialogModule,
     ConfirmDialogModule,
     SelectModule,
     ToastModule,
-    DatePickerModule,
-    TimelineModule,
     NavbarComponent,
     VehiclePoliceStatusComponent
   ],
@@ -340,7 +334,10 @@ export class ProfileComponent implements OnInit {
   }
 
   formatDate(date: Date | string): string {
-    return new Date(date).toLocaleDateString('sr-RS');
+    if (!date) return '';
+    const d = new Date(String(date).replace(' ', 'T'));
+    if (isNaN(d.getTime())) return '';
+    return d.toLocaleDateString('sr-RS', { day: '2-digit', month: '2-digit', year: 'numeric' });
   }
 
   openCreateDialog(): void {

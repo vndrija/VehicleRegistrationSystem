@@ -1,209 +1,97 @@
 import { Component, Input, OnInit, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { CardModule } from 'primeng/card';
-import { ButtonModule } from 'primeng/button';
-import { MessageModule } from 'primeng/message';
-import { TableModule } from 'primeng/table';
-import { ProgressSpinnerModule  } from 'primeng/progressspinner';
 import { ToastModule } from 'primeng/toast';
 import { MessageService } from 'primeng/api';
 
-import { PoliceService, PoliceVehicleReport, TrafficViolation } from '../../services/police.service';
+import { PoliceService } from '../../services/police.service';
 
 @Component({
   selector: 'app-vehicle-police-status',
   standalone: true,
-  imports: [
-    CommonModule,
-    CardModule,
-    ButtonModule,
-    MessageModule,
-    TableModule,
-    ProgressSpinnerModule,
-    ToastModule
-  ],
+  imports: [CommonModule, ToastModule],
   providers: [MessageService],
   template: `
     <p-toast></p-toast>
 
-    <div class="vehicle-police-status">
-      <p-card class="police-card">
-        <ng-template pTemplate="header">
-          <div class="police-header">
-            <div class="header-title">
-              <i class="pi pi-shield text-2xl text-blue-600 mr-3"></i>
-              <h3 class="text-xl font-bold">Policijska Verifikacija</h3>
-            </div>
+    @if (isLoading()) {
+      <div class="flex items-center gap-1.5 text-xs text-gray-400">
+        <i class="pi pi-spin pi-spinner" style="font-size: 0.6rem"></i>
+        <span>Провера са МУП-ом...</span>
+      </div>
+
+    } @else if (policeReport()) {
+      <div class="space-y-2 text-xs">
+
+        <!-- Status row + action icons -->
+        <div class="flex items-center justify-between">
+          <div class="flex items-center gap-1.5">
+            <span class="w-1.5 h-1.5 rounded-full flex-shrink-0" [ngClass]="getStatusDotClass()"></span>
+            <span class="font-medium text-gray-700">{{ getStatusInSerbian(policeReport()!.status) }}</span>
           </div>
-        </ng-template>
-
-        @if (isLoading()) {
-          <div class="text-center py-8">
-            <i class="pi pi-spin pi-spinner text-3xl text-blue-600"></i>
-            <p class="mt-2 text-gray-600">Proveravamo status vozila sa policijom...</p>
+          <div class="flex items-center gap-2">
+            <button
+              class="text-gray-300 hover:text-[#003893] transition-colors"
+              title="Освежи"
+              (click)="checkPoliceStatus()"
+            ><i class="pi pi-refresh" style="font-size: 0.65rem"></i></button>
+            <button
+              class="text-gray-300 hover:text-[#003893] transition-colors"
+              title="Пријави полицији"
+              (click)="reportVehicle()"
+            ><i class="pi pi-send" style="font-size: 0.65rem"></i></button>
           </div>
-        } @else if (policeReport()) {
-          <div class="space-y-4">
-            <!-- Status Badge -->
-            <div class="status-section">
-              <div class="flex items-center justify-between mb-4">
-                <h4 class="font-semibold text-gray-800">Status Vozila</h4>
-                <span [ngClass]="getStatusBadgeClass()">
-                  {{ getStatusInSerbian(policeReport()!.status) }}
-                </span>
-              </div>
-            </div>
+        </div>
 
-            <!-- Wanted Status -->
-            @if (policeReport()!.isWanted) {
-              <p-message
-                severity="error"
-                [text]="'⚠️ TRAŽENO: ' + (policeReport()!.wantedReason || 'Nepoznat razlog')"
-                styleClass="w-full"
-              ></p-message>
-            }
-
-            <!-- Outstanding Fines -->
-            <div class="fines-section">
-              <div class="flex items-center justify-between p-4 bg-yellow-50 rounded-lg border border-yellow-200">
-                <div>
-                  <p class="text-sm text-gray-600">Neplaćene Kazne</p>
-                  <p class="text-2xl font-bold text-yellow-700">RSD{{ policeReport()!.outstandingFines }}</p>
-                </div>
-                <i class="pi pi-exclamation-circle text-3xl text-yellow-600"></i>
-              </div>
-            </div>
-
-            <!-- Traffic Violations -->
-            @if (policeReport()!.violationCount > 0) {
-              <div class="violations-section">
-                <h4 class="font-semibold text-gray-800 mb-3">
-                  Prometne Povrede ({{ policeReport()!.violationCount }})
-                </h4>
-
-                <p-table
-                  [value]="policeReport()!.activeViolations"
-                  [paginator]="true"
-                  [rows]="5"
-                  responsiveLayout="scroll"
-                  styleClass="p-datatable-sm"
-                >
-                  <ng-template pTemplate="header">
-                    <tr>
-                      <th>Tip</th>
-                      <th>Lokacija</th>
-                      <th>Datum</th>
-                      <th>Kazna</th>
-                      <th>Status</th>
-                    </tr>
-                  </ng-template>
-                  <ng-template pTemplate="body" let-violation>
-                    <tr>
-                      <td>
-                        <span class="font-semibold">{{ violation.violationType }}</span>
-                      </td>
-                      <td>{{ violation.location }}</td>
-                      <td>{{ formatDate(violation.dateOfViolation) }}</td>
-                      <td class="font-bold">RSD{{ violation.fineAmount }}</td>
-                      <td>
-                        <span [ngClass]="getViolationStatusClass(violation.status)">
-                          {{ getViolationStatusInSerbian(violation.status) }}
-                        </span>
-                      </td>
-                    </tr>
-                  </ng-template>
-                  <ng-template pTemplate="emptymessage">
-                    <tr>
-                      <td colspan="5" class="text-center text-gray-500">Nema povrede u evidenciji</td>
-                    </tr>
-                  </ng-template>
-                </p-table>
-              </div>
-            } @else {
-              <p-message
-                severity="success"
-                text="✓ Nema prometnih povreda u evidenciji"
-                styleClass="w-full"
-              ></p-message>
-            }
-
-            <!-- Clear Status -->
-            @if (!policeReport()!.isWanted && policeReport()!.violationCount === 0) {
-              <p-message
-                severity="success"
-                text="✓ Status vozila je ČIST"
-                styleClass="w-full"
-              ></p-message>
-            }
-
-            <!-- Last Checked -->
-            <div class="text-xs text-gray-500 text-center pt-2">
-              Poslednja proverka: {{ formatDate(policeReport()!.checkedAt) }}
-            </div>
-          </div>
-        } @else if (error()) {
-          <p-message
-            severity="error"
-            [text]="error()!"
-            styleClass="w-full"
-          ></p-message>
+        <!-- Wanted -->
+        @if (policeReport()!.isWanted) {
+          <p class="text-[#C6363C] font-semibold">
+            ⚠ {{ policeReport()!.wantedReason || 'Непознат разлог' }}
+          </p>
         }
 
-        <!-- Action Button -->
-        <ng-template pTemplate="footer">
-          <div class="flex justify-end gap-2">
-            <p-button
-              label="Osveži Status"
-              icon="pi pi-refresh"
-              severity="secondary"
-              [loading]="isLoading()"
-              (onClick)="checkPoliceStatus()"
-            ></p-button>
-            <p-button
-              label="Prijavi Policiji"
-              icon="pi pi-send"
-              severity="secondary"
-              [loading]="isReporting()"
-              (onClick)="reportVehicle()"
-            ></p-button>
+        <!-- Outstanding fines -->
+        @if (policeReport()!.outstandingFines > 0) {
+          <p class="text-amber-700">
+            Неплаћено: <span class="font-semibold">{{ policeReport()!.outstandingFines | number }} RSD</span>
+          </p>
+        }
+
+        <!-- Violations -->
+        @if (policeReport()!.violationCount > 0) {
+          <div class="space-y-2 pt-0.5">
+            @for (v of policeReport()!.activeViolations; track $index) {
+              <div class="flex items-start justify-between gap-3">
+                <div class="min-w-0">
+                  <p class="text-gray-700 font-medium truncate">{{ v.violationType }}</p>
+                  <p class="text-gray-400 truncate" style="font-size: 0.65rem">
+                    {{ v.location }} · {{ formatDate(v.dateOfViolation) }}
+                  </p>
+                </div>
+                <div class="flex-shrink-0 text-right">
+                  <p class="font-semibold text-gray-700">{{ v.fineAmount | number }} RSD</p>
+                  <p [ngClass]="getViolationStatusClass(v.status)" style="font-size: 0.65rem">
+                    {{ getViolationStatusInSerbian(v.status) }}
+                  </p>
+                </div>
+              </div>
+            }
           </div>
-        </ng-template>
-      </p-card>
-    </div>
+        } @else if (!policeReport()!.isWanted) {
+          <p class="text-green-600">Без налаза у евиденцији</p>
+        }
+
+        <!-- Last checked -->
+        <p class="text-gray-300 pt-0.5" style="font-size: 0.62rem">
+          Проверено {{ formatDate(policeReport()!.checkedAt) }}
+        </p>
+
+      </div>
+
+    } @else if (error()) {
+      <p class="text-xs text-gray-400 italic">Провера тренутно није доступна</p>
+    }
   `,
-  styles: [`
-    .police-header {
-      background: linear-gradient(135deg, #1e3a8a 0%, #1e40af 100%);
-      color: white;
-      padding: 1.5rem;
-      border-radius: 0.5rem;
-    }
-
-    .header-title {
-      display: flex;
-      align-items: center;
-    }
-
-    .header-title h3 {
-      margin: 0;
-      color: white;
-    }
-
-    .police-card {
-      border: 2px solid #dbeafe;
-      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-    }
-
-    .status-section,
-    .fines-section,
-    .violations-section {
-      padding: 0.5rem 0;
-    }
-
-    .vehicle-police-status {
-      margin: 1rem 0;
-    }
-  `]
+  styles: []
 })
 export class VehiclePoliceStatusComponent implements OnInit {
   @Input() vehicleId!: number;
@@ -230,15 +118,14 @@ export class VehiclePoliceStatusComponent implements OnInit {
         this.isLoading.set(false);
       },
       error: (err) => {
-        this.error.set('Neuspešna proverka statusa vozila sa policijom');
+        this.error.set('Провера није успела');
         this.isLoading.set(false);
         this.messageService.add({
           severity: 'error',
-          summary: 'Greška',
-          detail: 'Nije moguće dobiti podatke policije',
+          summary: 'Грешка',
+          detail: 'Није могуће добити податке МУП-а',
           life: 5000
         });
-        console.error('Police check error:', err);
       }
     });
   }
@@ -247,91 +134,72 @@ export class VehiclePoliceStatusComponent implements OnInit {
     this.isReporting.set(true);
 
     this.policeService.reportVehicleToPolice(this.vehicleId).subscribe({
-      next: (response) => {
+      next: () => {
         this.isReporting.set(false);
         this.messageService.add({
           severity: 'success',
-          summary: 'Prijavljeno',
-          detail: 'Vozilo je prijavljeno policiji',
+          summary: 'Пријављено',
+          detail: 'Возило је пријављено полицији',
           life: 3000
         });
       },
-      error: (err) => {
+      error: () => {
         this.isReporting.set(false);
         this.messageService.add({
           severity: 'error',
-          summary: 'Greška',
-          detail: 'Neuspešno prijavljivanje vozila policiji',
+          summary: 'Грешка',
+          detail: 'Пријава није успела',
           life: 5000
         });
-        console.error('Report error:', err);
       }
     });
   }
 
-  getStatusInSerbian(status: string): string {
-    switch (status) {
-      case 'Wanted':
-        return 'Traženo';
-      case 'Alert':
-        return 'Upozorenje';
-      case 'Clear':
-        return 'Čisto';
-      default:
-        return status;
+  getStatusDotClass(): string {
+    switch (this.policeReport()?.status) {
+      case 'Wanted': return 'bg-[#C6363C]';
+      case 'Alert':  return 'bg-amber-500';
+      case 'Clear':  return 'bg-green-500';
+      default:       return 'bg-gray-400';
     }
   }
 
-  getStatusBadgeClass(): string {
-    const status = this.policeReport()?.status;
-    const baseClass = 'px-3 py-1 rounded-full text-sm font-semibold';
-
+  getStatusInSerbian(status: string): string {
     switch (status) {
-      case 'Wanted':
-        return `${baseClass} bg-red-100 text-red-700 border border-red-300`;
-      case 'Alert':
-        return `${baseClass} bg-yellow-100 text-yellow-700 border border-yellow-300`;
-      case 'Clear':
-        return `${baseClass} bg-green-100 text-green-700 border border-green-300`;
-      default:
-        return `${baseClass} bg-gray-100 text-gray-700 border border-gray-300`;
+      case 'Wanted': return 'Потражно';
+      case 'Alert':  return 'Упозорење';
+      case 'Clear':  return 'Без налаза';
+      default:       return status;
     }
   }
 
   getViolationStatusInSerbian(status: string): string {
     switch (status?.toLowerCase()) {
-      case 'pending':
-        return 'Na čekanju';
-      case 'paid':
-        return 'Plaćeno';
-      case 'disputed':
-        return 'Sporeno';
-      default:
-        return status;
+      case 'pending':  return 'На чекању';
+      case 'paid':     return 'Плаћено';
+      case 'disputed': return 'Спорно';
+      default:         return status;
     }
   }
 
   getViolationStatusClass(status: string): string {
-    const baseClass = 'px-2 py-1 rounded text-xs font-semibold';
-
     switch (status?.toLowerCase()) {
-      case 'pending':
-        return `${baseClass} bg-red-100 text-red-700`;
-      case 'paid':
-        return `${baseClass} bg-green-100 text-green-700`;
-      case 'disputed':
-        return `${baseClass} bg-yellow-100 text-yellow-700`;
-      default:
-        return `${baseClass} bg-gray-100 text-gray-700`;
+      case 'pending':  return 'text-amber-600';
+      case 'paid':     return 'text-green-600';
+      case 'disputed': return 'text-blue-600';
+      default:         return 'text-gray-500';
     }
   }
 
+  // kept for potential external use
+  getStatusBadgeClass(): string {
+    return this.getStatusDotClass();
+  }
+
   formatDate(dateString: string): string {
-    const date = new Date(dateString);
-    return date.toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric'
+    if (!dateString) return '';
+    return new Date(dateString).toLocaleDateString('sr-RS', {
+      day: '2-digit', month: '2-digit', year: 'numeric'
     });
   }
 }

@@ -3,69 +3,49 @@
 <p-toast></p-toast>
 <p-confirmDialog></p-confirmDialog>
 
-<div class="min-h-screen bg-gray-50 py-8">
+<!-- Tricolor stripe -->
+<div class="flex" style="height: 4px">
+  <div class="flex-1 bg-[#C6363C]"></div>
+  <div class="flex-1 bg-[#003893]"></div>
+  <div class="flex-1 bg-gray-300"></div>
+</div>
+
+<!-- Page header -->
+<div class="bg-[#003893]">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+    <p class="text-[10px] font-semibold tracking-[0.15em] uppercase text-blue-200 mb-1">
+      Министарство унутрашњих послова — Република Србија
+    </p>
+    <h1 class="text-xl font-bold text-white">Мој профил</h1>
+  </div>
+</div>
+
+<div class="min-h-screen bg-[#EEF2F8] py-6">
   <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-    <h1 class="text-3xl font-bold text-gray-900 mb-8">Мој профил</h1>
 
     <!-- User Profile Section -->
-    <div class="mb-8">
-      <p-card>
-        <ng-template pTemplate="header">
-          <div class="p-4 bg-blue-600 text-white">
-            <h2 class="text-xl font-semibold">Подаци о кориснику</h2>
-          </div>
-        </ng-template>
-
-        <form [formGroup]="profileForm" class="space-y-4">
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <label for="username" class="block text-sm font-medium text-gray-700 mb-1">
-                Корисничко име
-              </label>
-              <input
-                id="username"
-                type="text"
-                pInputText
-                formControlName="username"
-                class="w-full"
-              />
+    <div class="mb-6">
+      <div class="bg-white border border-gray-200 rounded shadow-sm overflow-hidden">
+        <div class="px-5 py-3 bg-[#003893] text-white">
+          <h2 class="text-base font-semibold">Подаци о кориснику</h2>
+        </div>
+        <div class="px-5 py-5">
+          @if (!isEditingProfile()) {
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+              <div>
+                <p class="text-xs text-gray-400 uppercase tracking-wide mb-1">Корисничко ime</p>
+                <p class="text-sm font-medium text-gray-900">{{ profileForm.get('username')?.value || '—' }}</p>
+              </div>
+              <div>
+                <p class="text-xs text-gray-400 uppercase tracking-wide mb-1">Е-пошта</p>
+                <p class="text-sm font-medium text-gray-900">{{ profileForm.get('email')?.value || '—' }}</p>
+              </div>
+              <div>
+                <p class="text-xs text-gray-400 uppercase tracking-wide mb-1">Улога</p>
+                <p class="text-sm font-medium text-gray-900">{{ profileForm.get('role')?.value || '—' }}</p>
+              </div>
             </div>
-
-            <div>
-              <label for="email" class="block text-sm font-medium text-gray-700 mb-1">
-                Е-пошта
-              </label>
-              <input
-                id="email"
-                type="email"
-                pInputText
-                formControlName="email"
-                class="w-full"
-              />
-            </div>
-
-            <div>
-              <label for="role" class="block text-sm font-medium text-gray-700 mb-1">
-                Улога
-              </label>
-              <input
-                id="role"
-                type="text"
-                pInputText
-                formControlName="role"
-                class="w-full bg-gray-100"
-                readonly
-              />
-              <small class="text-gray-500">Улога се не може мењати</small>
-            </div>
-          </div>
-
-          @if (profileError()) {
-            <p-message severity="error" [text]="profileError()"></p-message>
-          }
-
-          <div class="flex gap-2">
-            @if (!isEditingProfile()) {
+            <div class="mt-5 pt-4 border-t border-gray-100 flex gap-2">
               <p-button
                 label="Измени профил"
                 icon="pi pi-pencil"
@@ -77,107 +57,89 @@
                 severity="secondary"
                 (onClick)="togglePasswordChange()"
               ></p-button>
-            } @else {
-              <p-button
-                label="Сачувај"
-                icon="pi pi-check"
-                [loading]="isLoadingProfile()"
-                (onClick)="saveProfile()"
-              ></p-button>
-              <p-button
-                label="Откажи"
-                icon="pi pi-times"
-                severity="secondary"
-                (onClick)="cancelProfileEdit()"
-              ></p-button>
-            }
-          </div>
-        </form>
-      </p-card>
+            </div>
+          } @else {
+            <form [formGroup]="profileForm" class="space-y-4">
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label for="username" class="block text-xs text-gray-500 uppercase tracking-wide mb-1">Корисничко ime</label>
+                  <input id="username" type="text" pInputText formControlName="username" class="w-full" />
+                </div>
+                <div>
+                  <label for="email" class="block text-xs text-gray-500 uppercase tracking-wide mb-1">Е-пошта</label>
+                  <input id="email" type="email" pInputText formControlName="email" class="w-full" />
+                </div>
+                <div>
+                  <label for="role" class="block text-xs text-gray-500 uppercase tracking-wide mb-1">Улога</label>
+                  <input id="role" type="text" pInputText formControlName="role" class="w-full bg-gray-100" readonly />
+                  <small class="text-gray-400">Улога се не може мењати</small>
+                </div>
+              </div>
+              @if (profileError()) {
+                <div class="flex items-start gap-2 bg-red-50 border-l-4 border-[#C6363C] px-3 py-2 rounded-r">
+                  <i class="pi pi-exclamation-circle text-[#C6363C] text-sm mt-0.5 flex-shrink-0"></i>
+                  <span class="text-sm text-red-700">{{ profileError() }}</span>
+                </div>
+              }
+              <div class="pt-1 flex gap-2">
+                <p-button label="Сачувај" icon="pi pi-check" [loading]="isLoadingProfile()" (onClick)="saveProfile()"></p-button>
+                <p-button label="Откажи" icon="pi pi-times" severity="secondary" (onClick)="cancelProfileEdit()"></p-button>
+              </div>
+            </form>
+          }
+        </div>
+      </div>
     </div>
 
     <!-- Change Password Section -->
     @if (isChangingPassword()) {
-      <div class="mb-8">
-        <p-card>
-          <ng-template pTemplate="header">
-            <div class="p-4 bg-orange-600 text-white">
-              <h2 class="text-xl font-semibold">Промена лозинке</h2>
-            </div>
-          </ng-template>
-
-          <form [formGroup]="passwordForm" class="space-y-4">
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <div>
-                <label for="currentPassword" class="block text-sm font-medium text-gray-700 mb-1">
-                  Тренутна лозинка
-                </label>
-                <p-password
-                  id="currentPassword"
-                  formControlName="currentPassword"
-                  [feedback]="false"
-                  [toggleMask]="true"
-                  styleClass="w-full"
-                ></p-password>
+      <div class="mb-6">
+        <div class="bg-white border border-gray-200 rounded shadow-sm overflow-hidden">
+          <div class="px-5 py-3 bg-[#003893] text-white">
+            <h2 class="text-base font-semibold">Промена лозинке</h2>
+          </div>
+          <div class="px-5 py-5">
+            <form [formGroup]="passwordForm" class="space-y-4">
+              <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div>
+                  <label for="currentPassword" class="block text-xs text-gray-500 uppercase tracking-wide mb-1">Тренутна лозинка</label>
+                  <p-password id="currentPassword" formControlName="currentPassword" [feedback]="false" [toggleMask]="true" styleClass="w-full"></p-password>
+                </div>
+                <div>
+                  <label for="newPassword" class="block text-xs text-gray-500 uppercase tracking-wide mb-1">Нова лозинка</label>
+                  <p-password id="newPassword" formControlName="newPassword" [toggleMask]="true" styleClass="w-full"></p-password>
+                </div>
+                <div>
+                  <label for="confirmPassword" class="block text-xs text-gray-500 uppercase tracking-wide mb-1">Потврди нову лозинку</label>
+                  <p-password id="confirmPassword" formControlName="confirmPassword" [feedback]="false" [toggleMask]="true" styleClass="w-full"></p-password>
+                </div>
               </div>
-
-              <div>
-                <label for="newPassword" class="block text-sm font-medium text-gray-700 mb-1">
-                  Нова лозинка
-                </label>
-                <p-password
-                  id="newPassword"
-                  formControlName="newPassword"
-                  [toggleMask]="true"
-                  styleClass="w-full"
-                ></p-password>
+              @if (passwordForm.hasError('passwordMismatch')) {
+                <div class="flex items-start gap-2 bg-red-50 border-l-4 border-[#C6363C] px-3 py-2 rounded-r">
+                  <i class="pi pi-exclamation-circle text-[#C6363C] text-sm mt-0.5 flex-shrink-0"></i>
+                  <span class="text-sm text-red-700">Лозинке се не поклапају</span>
+                </div>
+              }
+              @if (passwordError()) {
+                <div class="flex items-start gap-2 bg-red-50 border-l-4 border-[#C6363C] px-3 py-2 rounded-r">
+                  <i class="pi pi-exclamation-circle text-[#C6363C] text-sm mt-0.5 flex-shrink-0"></i>
+                  <span class="text-sm text-red-700">{{ passwordError() }}</span>
+                </div>
+              }
+              <div class="pt-1 flex gap-2">
+                <p-button label="Промени лозинку" icon="pi pi-check" [loading]="isLoadingPassword()" (onClick)="changePassword()"></p-button>
+                <p-button label="Откажи" icon="pi pi-times" severity="secondary" (onClick)="togglePasswordChange()"></p-button>
               </div>
-
-              <div>
-                <label for="confirmPassword" class="block text-sm font-medium text-gray-700 mb-1">
-                  Потврди нову лозинку
-                </label>
-                <p-password
-                  id="confirmPassword"
-                  formControlName="confirmPassword"
-                  [feedback]="false"
-                  [toggleMask]="true"
-                  styleClass="w-full"
-                ></p-password>
-              </div>
-            </div>
-
-            @if (passwordForm.hasError('passwordMismatch')) {
-              <p-message severity="error" text="Лозинке се не поклапају"></p-message>
-            }
-
-            @if (passwordError()) {
-              <p-message severity="error" [text]="passwordError()"></p-message>
-            }
-
-            <div class="flex gap-2">
-              <p-button
-                label="Промени лозинку"
-                icon="pi pi-check"
-                [loading]="isLoadingPassword()"
-                (onClick)="changePassword()"
-              ></p-button>
-              <p-button
-                label="Откажи"
-                icon="pi pi-times"
-                severity="secondary"
-                (onClick)="togglePasswordChange()"
-              ></p-button>
-            </div>
-          </form>
-        </p-card>
+            </form>
+          </div>
+        </div>
       </div>
     }
 
     <!-- User Vehicles Section -->
     <div>
       <div class="flex justify-between items-center mb-4">
-        <h2 class="text-2xl font-bold text-gray-900">Моја возила</h2>
+        <h2 class="text-base font-semibold text-gray-900 uppercase tracking-wide">Моја возила</h2>
         <p-button
           label="Додај возило"
           icon="pi pi-plus"
@@ -187,7 +149,7 @@
 
       @if (isLoadingVehicles()) {
         <div class="text-center py-8">
-          <i class="pi pi-spin pi-spinner text-4xl text-blue-600"></i>
+          <i class="pi pi-spin pi-spinner text-4xl text-[#003893]"></i>
           <p class="mt-2 text-gray-600">Учитавање возила...</p>
         </div>
       } @else if (userVehicles().length === 0) {
@@ -200,80 +162,83 @@
       } @else {
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           @for (vehicle of userVehicles(); track vehicle.id) {
-            <p-card>
-              <ng-template pTemplate="header">
-                <div class="p-4"
-                  [class.bg-red-100]="isVehicleExpired(vehicle)"
-                  [class.bg-orange-100]="isVehicleExpiringSoon(vehicle) && !isVehicleExpired(vehicle)"
-                  [class.bg-blue-100]="!isVehicleExpiringSoon(vehicle) && !isVehicleExpired(vehicle)"
-                >
-                  <h3 class="text-xl font-bold"
-                    [class.text-red-900]="isVehicleExpired(vehicle)"
-                    [class.text-orange-900]="isVehicleExpiringSoon(vehicle) && !isVehicleExpired(vehicle)"
-                    [class.text-blue-900]="!isVehicleExpiringSoon(vehicle) && !isVehicleExpired(vehicle)"
-                  >
-                    {{ vehicle.make }} {{ vehicle.model }}
-                  </h3>
-                </div>
-              </ng-template>
+            <div class="bg-white border border-gray-200 rounded shadow-sm overflow-hidden flex flex-col">
 
-              <div class="space-y-2">
-                <div class="flex justify-between">
-                  <span class="font-semibold text-gray-700">Регистарска таблица:</span>
-                  <span class="text-gray-900">{{ vehicle.registrationNumber }}</span>
-                </div>
-                <div class="flex justify-between">
-                  <span class="font-semibold text-gray-700">Година производње:</span>
-                  <span class="text-gray-900">{{ vehicle.year }}</span>
-                </div>
-                <div class="flex justify-between">
-                  <span class="font-semibold text-gray-700">Истиче:</span>
-                  <span
-                    [class.text-red-600]="isVehicleExpired(vehicle)"
-                    [class.text-orange-600]="isVehicleExpiringSoon(vehicle) && !isVehicleExpired(vehicle)"
-                    [class.font-bold]="isVehicleExpired(vehicle) || isVehicleExpiringSoon(vehicle)"
-                  >
-                    {{ formatDate(vehicle.expirationDate) }}
-                  </span>
-                </div>
+              <!-- Colored status strip -->
+              <div class="h-1"
+                [class.bg-gray-300]="vehicle.status === 'Unregistered'"
+                [class.bg-[#C6363C]]="vehicle.status !== 'Unregistered' && isVehicleExpired(vehicle)"
+                [class.bg-orange-400]="vehicle.status !== 'Unregistered' && isVehicleExpiringSoon(vehicle) && !isVehicleExpired(vehicle)"
+                [class.bg-[#003893]]="vehicle.status !== 'Unregistered' && !isVehicleExpiringSoon(vehicle) && !isVehicleExpired(vehicle)"
+              ></div>
 
-                @if (isVehicleExpired(vehicle)) {
-                  <div class="bg-red-100 border border-red-400 text-red-700 px-3 py-2 rounded">
-                    <i class="pi pi-exclamation-triangle mr-2"></i>
-                    <strong>Регистрација истекла!</strong>
+              <!-- Card header -->
+              <div class="px-4 pt-4 pb-3">
+                <div class="flex items-start justify-between gap-2">
+                  <div>
+                    <p class="text-xs text-gray-400 uppercase tracking-wide mb-0.5">Возило</p>
+                    <h3 class="text-base font-bold text-gray-900">{{ vehicle.make }} {{ vehicle.model }}</h3>
+                    <p class="text-xs text-gray-500 mt-0.5">{{ vehicle.year }}. год.</p>
                   </div>
-                } @else if (isVehicleExpiringSoon(vehicle)) {
-                  <div class="bg-orange-100 border border-orange-400 text-orange-700 px-3 py-2 rounded">
-                    <i class="pi pi-exclamation-circle mr-2"></i>
-                    <strong>Регистрација ускоро истиче!</strong>
+                  <!-- License plate badge -->
+                  <div class="flex-shrink-0 bg-[#EEF2F8] border border-[#003893]/30 rounded px-3 py-1.5 text-center">
+                    <p class="text-[9px] text-[#003893]/60 font-semibold tracking-widest uppercase leading-none mb-1">СРБ</p>
+                    <p class="text-sm font-bold text-[#003893] tracking-wider leading-none">{{ vehicle.registrationNumber }}</p>
                   </div>
+                </div>
+              </div>
+
+              <!-- Expiration / status row -->
+              <div class="px-4 pb-3">
+                @if (vehicle.status === 'Unregistered') {
+                  <div class="flex items-center gap-1.5 text-xs text-gray-500 bg-gray-50 border border-gray-200 rounded px-2.5 py-1.5">
+                    <i class="pi pi-clock text-xs"></i>
+                    <span class="font-semibold">На чекању регистрације</span>
+                  </div>
+                } @else {
+                  <div class="flex items-center justify-between text-sm">
+                    <span class="text-gray-500">Важи до</span>
+                    <span
+                      class="font-semibold"
+                      [class.text-[#C6363C]]="isVehicleExpired(vehicle)"
+                      [class.text-orange-600]="isVehicleExpiringSoon(vehicle) && !isVehicleExpired(vehicle)"
+                      [class.text-gray-800]="!isVehicleExpiringSoon(vehicle) && !isVehicleExpired(vehicle)"
+                    >
+                      {{ formatDate(vehicle.expirationDate) }}
+                    </span>
+                  </div>
+
+                  @if (isVehicleExpired(vehicle)) {
+                    <div class="mt-2 flex items-center gap-1.5 text-xs text-[#C6363C] bg-red-50 border border-red-200 rounded px-2.5 py-1.5">
+                      <i class="pi pi-exclamation-triangle text-xs"></i>
+                      <span class="font-semibold">Регистрација истекла</span>
+                    </div>
+                  } @else if (isVehicleExpiringSoon(vehicle)) {
+                    <div class="mt-2 flex items-center gap-1.5 text-xs text-orange-700 bg-orange-50 border border-orange-200 rounded px-2.5 py-1.5">
+                      <i class="pi pi-clock text-xs"></i>
+                      <span class="font-semibold">Ускоро истиче</span>
+                    </div>
+                  }
                 }
               </div>
 
-              <!-- Police Status Section -->
-              <div class="mt-4 border-t pt-4">
+              <!-- Police status -->
+              <div class="px-4 pb-3 border-t border-gray-100 pt-3">
                 <app-vehicle-police-status [vehicleId]="vehicle.id"></app-vehicle-police-status>
               </div>
 
-              <ng-template pTemplate="footer">
-                <div class="flex gap-2 justify-end">
-                  <p-button
-                    icon="pi pi-info-circle"
-                    label="Детаљи"
-                    severity="secondary"
-                    size="small"
-                    (onClick)="openDetailsDialog(vehicle)"
-                  ></p-button>
-                  <p-button
-                    icon="pi pi-trash"
-                    label="Обриши"
-                    severity="danger"
-                    size="small"
-                    (onClick)="deleteVehicle(vehicle)"
-                  ></p-button>
-                </div>
-              </ng-template>
-            </p-card>
+              <!-- Actions -->
+              <div class="mt-auto px-4 py-3 border-t border-gray-100 flex gap-2 justify-end">
+                <p-button
+                  icon="pi pi-info-circle"
+                  label="Детаљи"
+                  severity="secondary"
+                  size="small"
+                  (onClick)="openDetailsDialog(vehicle)"
+                ></p-button>
+              </div>
+
+            </div>
           }
         </div>
       }
@@ -361,7 +326,7 @@
 
       <div>
         <label for="editOwnerName" class="block text-sm font-medium text-gray-700 mb-1">
-          Име власника *
+          Ime власника *
         </label>
         <input
           id="editOwnerName"
@@ -371,7 +336,7 @@
           class="w-full bg-gray-100"
           readonly
         />
-        <small class="text-gray-500">Име власника се не може мењати</small>
+        <small class="text-gray-500">Ime власника се не може мењати</small>
       </div>
 
       <div>
@@ -391,7 +356,10 @@
     </div>
 
     @if (editVehicleError()) {
-      <p-message severity="error" [text]="editVehicleError()"></p-message>
+      <div class="flex items-start gap-2 bg-red-50 border-l-4 border-[#C6363C] px-3 py-2 rounded-r">
+        <i class="pi pi-exclamation-circle text-[#C6363C] text-sm mt-0.5 flex-shrink-0"></i>
+        <span class="text-sm text-red-700">{{ editVehicleError() }}</span>
+      </div>
     }
   </form>
 
@@ -491,7 +459,10 @@
     </div>
 
     @if (createVehicleError()) {
-      <p-message severity="error" [text]="createVehicleError()"></p-message>
+      <div class="flex items-start gap-2 bg-red-50 border-l-4 border-[#C6363C] px-3 py-2 rounded-r">
+        <i class="pi pi-exclamation-circle text-[#C6363C] text-sm mt-0.5 flex-shrink-0"></i>
+        <span class="text-sm text-red-700">{{ createVehicleError() }}</span>
+      </div>
     }
   </form>
 
@@ -518,269 +489,203 @@
   header="Детаљи возила"
   [(visible)]="showDetailsDialog"
   [modal]="true"
-  [style]="{ width: '70rem' }"
+  [style]="{ width: '60rem' }"
   (onHide)="closeDetailsDialog()"
 >
-  <div class="space-y-6">
-    <!-- Vehicle Information Section -->
-    <p-card>
-      <ng-template pTemplate="header">
-        <div class="p-4 bg-blue-600 text-white flex justify-between items-center">
-          <h3 class="text-xl font-semibold">Информације о возилу</h3>
-          <p-button
-            label="Измени"
-            icon="pi pi-pencil"
-            severity="secondary"
-            size="small"
-            [outlined]="true"
-            (onClick)="enableEditing()"
-            *ngIf="!isEditingInDetailsDialog()"
-          ></p-button>
-        </div>
-      </ng-template>
+  @if (selectedVehicle()) {
+    <div class="divide-y divide-gray-100">
 
-      <form [formGroup]="detailsForm" class="space-y-4">
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div>
-            <label class="block text-sm font-medium text-gray-700 mb-1">
-              Регистарска таблица
-            </label>
-            <input
-              type="text"
-              pInputText
-              formControlName="registrationNumber"
-              class="w-full bg-gray-100"
-              readonly
-            />
-          </div>
-
-          <div>
-            <label class="block text-sm font-medium text-gray-700 mb-1">
-              Произвођач *
-            </label>
-            <input
-              type="text"
-              pInputText
-              formControlName="make"
-              [readonly]="!isEditingInDetailsDialog()"
-              [class.bg-gray-100]="!isEditingInDetailsDialog()"
-              class="w-full"
-            />
-          </div>
-
-          <div>
-            <label class="block text-sm font-medium text-gray-700 mb-1">
-              Модел *
-            </label>
-            <input
-              type="text"
-              pInputText
-              formControlName="model"
-              [readonly]="!isEditingInDetailsDialog()"
-              [class.bg-gray-100]="!isEditingInDetailsDialog()"
-              class="w-full"
-            />
-          </div>
-
-          <div>
-            <label class="block text-sm font-medium text-gray-700 mb-1">
-              Година производње *
-            </label>
-            <input
-              type="number"
-              pInputText
-              formControlName="year"
-              [readonly]="!isEditingInDetailsDialog()"
-              [class.bg-gray-100]="!isEditingInDetailsDialog()"
-              class="w-full"
-            />
-          </div>
-
-          <div>
-            <label class="block text-sm font-medium text-gray-700 mb-1">
-              Име власника
-            </label>
-            <input
-              type="text"
-              pInputText
-              formControlName="ownerName"
-              class="w-full bg-gray-100"
-              readonly
-            />
-          </div>
-
-          <div>
-            <label class="block text-sm font-medium text-gray-700 mb-1">
-              Датум истека регистрације
-            </label>
-            <input
-              type="text"
-              pInputText
-              [value]="selectedVehicle() ? formatDate(selectedVehicle()!.expirationDate) : ''"
-              class="w-full bg-gray-100"
-              readonly
-            />
-          </div>
-
-          <div>
-            <label class="block text-sm font-medium text-gray-700 mb-1">
-              Статус
-            </label>
-            <input
-              type="text"
-              pInputText
-              [value]="selectedVehicle()?.status || 'Unregistered'"
-              class="w-full bg-gray-100"
-              readonly
-            />
-          </div>
+      <!-- Vehicle Information -->
+      <div class="pb-6">
+        <div class="flex items-center justify-between mb-4">
+          <h3 class="text-xs font-semibold text-gray-400 uppercase tracking-widest">Информације о возилу</h3>
+          @if (!isEditingInDetailsDialog()) {
+            <button
+              class="flex items-center gap-1.5 text-xs text-[#003893] hover:text-[#002060] font-medium transition-colors"
+              (click)="enableEditing()"
+            >
+              <i class="pi pi-pencil" style="font-size: 0.65rem"></i> Измени
+            </button>
+          }
         </div>
 
-        @if (isEditingInDetailsDialog()) {
-          <div class="flex gap-2 pt-4">
-            <p-button
-              label="Сачувај измене"
-              icon="pi pi-check"
-              [loading]="isUpdatingVehicle()"
-              (onClick)="saveDetailsEdits()"
-            ></p-button>
-            <p-button
-              label="Откажи"
-              icon="pi pi-times"
-              severity="secondary"
-              (onClick)="cancelDetailsEditing()"
-            ></p-button>
-          </div>
-        }
-      </form>
-    </p-card>
-
-    <!-- Ownership History Timeline -->
-    <p-card>
-      <ng-template pTemplate="header">
-        <div class="p-4 bg-green-600 text-white">
-          <h3 class="text-xl font-semibold">Историја власништва</h3>
-        </div>
-      </ng-template>
-
-      @if (isLoadingOwnershipHistory()) {
-        <div class="text-center py-4">
-          <i class="pi pi-spin pi-spinner text-2xl text-blue-600"></i>
-          <p class="mt-2 text-gray-600">Учитавање историје...</p>
-        </div>
-      } @else if (ownershipHistory().length === 0) {
-        <div class="text-center py-4">
-          <i class="pi pi-info-circle text-4xl text-gray-300 mb-2"></i>
-          <p class="text-gray-600">Нема доступне историје власништва</p>
-          <small class="text-gray-500">Тренутни власник је једини власник овог возила</small>
-        </div>
-      } @else {
-        <p-timeline [value]="ownershipHistory()" align="alternate" styleClass="customized-timeline">
-          <ng-template pTemplate="marker" let-history>
-            <div class="flex items-center justify-center w-8 h-8 rounded-full"
-              [class.bg-green-500]="!history.toDate"
-              [class.bg-blue-500]="history.toDate">
-              <i class="pi pi-user text-white"></i>
+        @if (!isEditingInDetailsDialog()) {
+          <div class="grid grid-cols-2 md:grid-cols-3 gap-x-8 gap-y-4">
+            <div>
+              <p class="text-xs text-gray-400 mb-0.5">Регистарска таблица</p>
+              <p class="text-sm font-semibold text-gray-900 tracking-wider">{{ selectedVehicle()!.registrationNumber }}</p>
             </div>
-          </ng-template>
-          <ng-template pTemplate="content" let-history>
-            <p-card>
-              <div class="p-3">
-                <div class="font-bold text-lg mb-2 text-gray-900">{{ history.ownerName }}</div>
-                <div class="text-gray-600 mb-1">
-                  <i class="pi pi-calendar mr-2"></i>
-                  <span class="font-semibold">Од:</span> {{ formatDate(history.fromDate) }}
-                </div>
-                @if (history.toDate) {
-                  <div class="text-gray-600">
-                    <i class="pi pi-calendar mr-2"></i>
-                    <span class="font-semibold">До:</span> {{ formatDate(history.toDate) }}
-                  </div>
-                } @else {
-                  <div class="text-green-600 font-semibold">
-                    <i class="pi pi-check-circle mr-2"></i>
-                    Тренутни власник
-                  </div>
+            <div>
+              <p class="text-xs text-gray-400 mb-0.5">Произвођач</p>
+              <p class="text-sm font-medium text-gray-900">{{ selectedVehicle()!.make }}</p>
+            </div>
+            <div>
+              <p class="text-xs text-gray-400 mb-0.5">Модел</p>
+              <p class="text-sm font-medium text-gray-900">{{ selectedVehicle()!.model }}</p>
+            </div>
+            <div>
+              <p class="text-xs text-gray-400 mb-0.5">Година производње</p>
+              <p class="text-sm font-medium text-gray-900">{{ selectedVehicle()!.year }}</p>
+            </div>
+            <div>
+              <p class="text-xs text-gray-400 mb-0.5">Власник</p>
+              <p class="text-sm font-medium text-gray-900">{{ selectedVehicle()!.ownerName }}</p>
+            </div>
+            @if (selectedVehicle()!.status !== 'Unregistered') {
+              <div>
+                <p class="text-xs text-gray-400 mb-0.5">Датум истека</p>
+                <p class="text-sm font-medium text-gray-900">{{ formatDate(selectedVehicle()!.expirationDate) }}</p>
+              </div>
+            }
+            <div>
+              <p class="text-xs text-gray-400 mb-0.5">Статус</p>
+              <p class="text-sm font-medium text-gray-900">{{ selectedVehicle()!.status }}</p>
+            </div>
+          </div>
+        } @else {
+          <form [formGroup]="detailsForm" class="space-y-4">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label class="block text-xs text-gray-500 uppercase tracking-wide mb-1">Регистарска таблица</label>
+                <input type="text" pInputText formControlName="registrationNumber" class="w-full bg-gray-100" readonly />
+              </div>
+              <div>
+                <label class="block text-xs text-gray-500 uppercase tracking-wide mb-1">Произвођач *</label>
+                <input type="text" pInputText formControlName="make" class="w-full" />
+                @if (detailsForm.get('make')?.invalid && detailsForm.get('make')?.touched) {
+                  <small class="text-red-600">Произвођач је обавезан</small>
                 }
               </div>
-            </p-card>
-          </ng-template>
-        </p-timeline>
-      }
-    </p-card>
-
-    <!-- Transfer Vehicle Section -->
-    <p-card>
-      <ng-template pTemplate="header">
-        <div class="p-4 bg-orange-600 text-white">
-          <h3 class="text-xl font-semibold">Пренос власништва</h3>
-        </div>
-      </ng-template>
-
-      @if (!showTransferForm()) {
-        <div class="text-center py-4">
-          <p class="text-gray-700 mb-4">Желите да пренесете власништво над овим возилом?</p>
-          <p-button
-            label="Покрени захтев за пренос"
-            icon="pi pi-send"
-            (onClick)="openTransferForm()"
-          ></p-button>
-        </div>
-      } @else {
-        <form [formGroup]="transferForm" class="space-y-4">
-          <div>
-            <label for="toUserId" class="block text-sm font-medium text-gray-700 mb-2">
-              Изаберите будућег власника *
-            </label>
-            @if (isLoadingUsers()) {
-              <div class="flex items-center gap-2 p-3 border border-gray-300 rounded">
-                <i class="pi pi-spin pi-spinner text-blue-600"></i>
-                <span class="text-gray-600">Учитавање корисника...</span>
+              <div>
+                <label class="block text-xs text-gray-500 uppercase tracking-wide mb-1">Модел *</label>
+                <input type="text" pInputText formControlName="model" class="w-full" />
+                @if (detailsForm.get('model')?.invalid && detailsForm.get('model')?.touched) {
+                  <small class="text-red-600">Модел је обавезан</small>
+                }
               </div>
-            } @else {
-              <p-select
-                id="toUserId"
-                [options]="availableUsers()"
-                formControlName="toUserId"
-                optionLabel="username"
-                [optionValue]="'id'"
-                placeholder="Изаберите корисника"
-                class="w-full"
-                [showClear]="true"
-                [filter]="true"
-              ></p-select>
-              <small class="text-gray-500">Изаберите корисника коме желите да пренесете возило</small>
-            }
-            @if (transferForm.get('toUserId')?.invalid && transferForm.get('toUserId')?.touched) {
-              <small class="text-red-600 block">Корисник је обавезан</small>
+              <div>
+                <label class="block text-xs text-gray-500 uppercase tracking-wide mb-1">Година производње *</label>
+                <input type="number" pInputText formControlName="year" class="w-full" />
+                @if (detailsForm.get('year')?.invalid && detailsForm.get('year')?.touched) {
+                  <small class="text-red-600">Година мора бити између 1900 и {{ currentYear }}</small>
+                }
+              </div>
+              <div>
+                <label class="block text-xs text-gray-500 uppercase tracking-wide mb-1">Власник</label>
+                <input type="text" pInputText formControlName="ownerName" class="w-full bg-gray-100" readonly />
+              </div>
+              @if (selectedVehicle()!.status !== 'Unregistered') {
+                <div>
+                  <label class="block text-xs text-gray-500 uppercase tracking-wide mb-1">Датум истека</label>
+                  <input type="text" pInputText [value]="formatDate(selectedVehicle()!.expirationDate)" class="w-full bg-gray-100" readonly />
+                </div>
+              }
+            </div>
+            <div class="flex gap-2 pt-1">
+              <p-button label="Сачувај" icon="pi pi-check" [loading]="isUpdatingVehicle()" (onClick)="saveDetailsEdits()"></p-button>
+              <p-button label="Откажи" icon="pi pi-times" severity="secondary" (onClick)="cancelDetailsEditing()"></p-button>
+            </div>
+          </form>
+        }
+      </div>
+
+      <!-- Ownership History -->
+      <div class="py-6">
+        <h3 class="text-xs font-semibold text-gray-400 uppercase tracking-widest mb-4">Историја власништва</h3>
+        @if (isLoadingOwnershipHistory()) {
+          <div class="flex items-center gap-2 text-sm text-gray-400">
+            <i class="pi pi-spin pi-spinner"></i>
+            <span>Учитавање...</span>
+          </div>
+        } @else if (ownershipHistory().length === 0) {
+          <p class="text-sm text-gray-400 italic">Тренутни власник је једини власник овог возила.</p>
+        } @else {
+          <div class="space-y-3">
+            @for (history of ownershipHistory(); track $index) {
+              <div class="flex items-start gap-3">
+                <div class="flex-shrink-0 pt-1.5">
+                  <span class="flex w-2 h-2 rounded-full"
+                    [class.bg-[#003893]]="!history.toDate"
+                    [class.bg-gray-300]="history.toDate"
+                  ></span>
+                </div>
+                <div>
+                  <p class="text-sm font-medium text-gray-900">{{ history.ownerName }}</p>
+                  <p class="text-xs text-gray-400">
+                    {{ formatDate(history.fromDate) }}
+                    @if (history.toDate) {
+                      — {{ formatDate(history.toDate) }}
+                    } @else {
+                      · <span class="text-[#003893] font-medium">Тренутни власник</span>
+                    }
+                  </p>
+                </div>
+              </div>
             }
           </div>
+        }
+      </div>
 
-          @if (transferError()) {
-            <p-message severity="error" [text]="transferError()"></p-message>
-          }
-
-          <div class="flex gap-2">
+      <!-- Transfer Section -->
+      <div class="pt-6">
+        <h3 class="text-xs font-semibold text-gray-400 uppercase tracking-widest mb-4">Пренос власништва</h3>
+        @if (!showTransferForm()) {
+          <div class="flex items-center justify-between">
+            <p class="text-sm text-gray-600">Желите да пренесете власништво над овим возилом?</p>
             <p-button
-              label="Пошаљи захтев"
+              label="Покрени пренос"
               icon="pi pi-send"
-              [loading]="isCreatingTransfer()"
-              (onClick)="createTransferRequest()"
-            ></p-button>
-            <p-button
-              label="Откажи"
-              icon="pi pi-times"
-              severity="secondary"
-              (onClick)="closeTransferForm()"
+              size="small"
+              (onClick)="openTransferForm()"
             ></p-button>
           </div>
-        </form>
-      }
-    </p-card>
-  </div>
+        } @else {
+          <form [formGroup]="transferForm" class="space-y-4">
+            <div>
+              <label for="toUserId" class="block text-xs text-gray-500 uppercase tracking-wide mb-1">Будући власник *</label>
+              @if (isLoadingUsers()) {
+                <div class="flex items-center gap-2 p-3 border border-gray-200 rounded text-sm text-gray-500">
+                  <i class="pi pi-spin pi-spinner"></i>
+                  <span>Учитавање корисника...</span>
+                </div>
+              } @else {
+                <p-select
+                  id="toUserId"
+                  [options]="availableUsers()"
+                  formControlName="toUserId"
+                  optionLabel="username"
+                  [optionValue]="'id'"
+                  placeholder="Изаберите корисника"
+                  class="w-full"
+                  [showClear]="true"
+                  [filter]="true"
+                  appendTo="body"
+                ></p-select>
+                <small class="text-gray-400">Изаберите корисника коме желите да пренесете возило</small>
+              }
+              @if (transferForm.get('toUserId')?.invalid && transferForm.get('toUserId')?.touched) {
+                <small class="text-red-600 block mt-1">Корисник је обавезан</small>
+              }
+            </div>
+            @if (transferError()) {
+              <div class="flex items-start gap-2 bg-red-50 border-l-4 border-[#C6363C] px-3 py-2 rounded-r">
+                <i class="pi pi-exclamation-circle text-[#C6363C] text-sm mt-0.5 flex-shrink-0"></i>
+                <span class="text-sm text-red-700">{{ transferError() }}</span>
+              </div>
+            }
+            <div class="flex gap-2">
+              <p-button label="Пошаљи захтев" icon="pi pi-send" [loading]="isCreatingTransfer()" (onClick)="createTransferRequest()"></p-button>
+              <p-button label="Откажи" icon="pi pi-times" severity="secondary" (onClick)="closeTransferForm()"></p-button>
+            </div>
+          </form>
+        }
+      </div>
+
+    </div>
+  }
 
   <ng-template pTemplate="footer">
-    <div class="flex gap-2 justify-end">
+    <div class="flex justify-end">
       <p-button
         label="Затвори"
         icon="pi pi-times"

@@ -1,141 +1,189 @@
-<div class="min-h-screen flex items-center justify-center bg-gray-50 px-4 py-8">
-  <div class="w-full max-w-md">
-    <p-card styleClass="shadow-lg">
-      <ng-template pTemplate="header">
-        <div class="px-6 pt-6 pb-2">
-          <h2 class="text-2xl font-bold text-gray-800 text-center">Register</h2>
+<div class="min-h-screen bg-[#EEF2F8] flex flex-col">
+
+  <!-- Ministry top bar -->
+  <div class="bg-[#003893]">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+      <div class="flex items-center gap-3 cursor-pointer w-fit" (click)="goToHome()">
+        <img src="/Mali_grb_Srbije.png" alt="Грб Србије" class="h-10 w-auto drop-shadow">
+        <div>
+          <p class="text-[10px] font-semibold tracking-[0.12em] uppercase text-blue-200">
+            Министарство унутрашњих послова — Република Србија
+          </p>
+          <p class="text-sm font-bold text-white">еУправа — Регистрација возила</p>
         </div>
-      </ng-template>
-
-      <form [formGroup]="registerForm" (ngSubmit)="onSubmit()" class="space-y-6">
-        @if (errorMessage()) {
-          <p-message severity="error" [text]="errorMessage()" styleClass="w-full"></p-message>
-        }
-
-        @if (successMessage()) {
-          <p-message severity="success" [text]="successMessage()" styleClass="w-full"></p-message>
-        }
-
-        <div class="flex flex-col gap-2">
-          <label for="username" class="text-sm font-medium text-gray-700">Username</label>
-          <input
-            pInputText
-            id="username"
-            formControlName="username"
-            placeholder="Enter your username"
-            class="w-full"
-            [class.ng-invalid]="registerForm.get('username')?.invalid && registerForm.get('username')?.touched"
-          />
-          @if (registerForm.get('username')?.invalid && registerForm.get('username')?.touched) {
-            <small class="text-red-500">
-              @if (registerForm.get('username')?.errors?.['required']) {
-                Username is required
-              }
-              @if (registerForm.get('username')?.errors?.['minlength']) {
-                Username must be at least 3 characters
-              }
-            </small>
-          }
-        </div>
-
-        <div class="flex flex-col gap-2">
-          <label for="email" class="text-sm font-medium text-gray-700">Email</label>
-          <input
-            pInputText
-            id="email"
-            formControlName="email"
-            placeholder="Enter your email"
-            type="email"
-            class="w-full"
-            [class.ng-invalid]="registerForm.get('email')?.invalid && registerForm.get('email')?.touched"
-          />
-          @if (registerForm.get('email')?.invalid && registerForm.get('email')?.touched) {
-            <small class="text-red-500">
-              @if (registerForm.get('email')?.errors?.['required']) {
-                Email is required
-              }
-              @if (registerForm.get('email')?.errors?.['email']) {
-                Please enter a valid email address
-              }
-            </small>
-          }
-        </div>
-
-        <div class="flex flex-col gap-2">
-          <label for="password" class="text-sm font-medium text-gray-700">Password</label>
-          <p-password
-            id="password"
-            formControlName="password"
-            placeholder="Enter your password"
-            [toggleMask]="true"
-            [feedback]="true"
-            styleClass="w-full"
-            inputStyleClass="w-full"
-            [class.ng-invalid]="registerForm.get('password')?.invalid && registerForm.get('password')?.touched"
-          ></p-password>
-          @if (registerForm.get('password')?.invalid && registerForm.get('password')?.touched) {
-            <small class="text-red-500">
-              @if (registerForm.get('password')?.errors?.['required']) {
-                Password is required
-              }
-              @if (registerForm.get('password')?.errors?.['minlength']) {
-                Password must be at least 6 characters
-              }
-            </small>
-          }
-        </div>
-
-        <div class="flex flex-col gap-2">
-          <label for="confirmPassword" class="text-sm font-medium text-gray-700">Confirm Password</label>
-          <p-password
-            id="confirmPassword"
-            formControlName="confirmPassword"
-            placeholder="Confirm your password"
-            [toggleMask]="true"
-            [feedback]="false"
-            styleClass="w-full"
-            inputStyleClass="w-full"
-            [class.ng-invalid]="registerForm.get('confirmPassword')?.invalid && registerForm.get('confirmPassword')?.touched || registerForm.errors?.['passwordMismatch']"
-          ></p-password>
-          @if (registerForm.get('confirmPassword')?.touched && registerForm.errors?.['passwordMismatch']) {
-            <small class="text-red-500">Passwords do not match</small>
-          }
-        </div>
-
-        <div class="flex flex-col gap-2">
-          <label for="role" class="text-sm font-medium text-gray-700">Role</label>
-          <p-select
-            id="role"
-            formControlName="role"
-            [options]="roles"
-            optionLabel="label"
-            optionValue="value"
-            placeholder="Select a role"
-            styleClass="w-full"
-          ></p-select>
-        </div>
-
-        <div class="flex flex-col gap-3">
-          <p-button
-            type="submit"
-            label="Register"
-            [disabled]="registerForm.invalid || isLoading()"
-            [loading]="isLoading()"
-            styleClass="w-full"
-          ></p-button>
-
-          <div class="text-center">
-            <span class="text-sm text-gray-600">Already have an account? </span>
-            <button
-              type="button"
-              (click)="goToLogin()"
-              class="text-sm text-blue-600 hover:text-blue-800 font-medium"
-            >
-              Login here
-            </button>
-          </div>
-        </div>
-      </form>
-    </p-card>
+      </div>
+    </div>
   </div>
+
+  <!-- Tricolor stripe -->
+  <div class="flex" style="height: 4px">
+    <div class="flex-1 bg-[#C6363C]"></div>
+    <div class="flex-1 bg-[#003893]"></div>
+    <div class="flex-1 bg-gray-300"></div>
+  </div>
+
+  <!-- Centered form -->
+  <div class="flex-1 flex items-center justify-center px-4 py-10">
+    <div class="w-full max-w-md">
+      <div class="bg-white border border-gray-200 rounded shadow-sm overflow-hidden">
+
+        <div class="bg-[#003893] px-5 py-4">
+          <h2 class="text-base font-bold text-white">Регистрација налога</h2>
+          <p class="text-xs text-blue-200 mt-0.5">Креирајте налог за приступ еУправи</p>
+        </div>
+
+        <div class="px-5 py-5">
+          <form [formGroup]="registerForm" (ngSubmit)="onSubmit()" class="space-y-4">
+
+            @if (errorMessage()) {
+              <div class="flex items-start gap-2 bg-red-50 border-l-4 border-[#C6363C] px-3 py-2.5 rounded-r">
+                <i class="pi pi-exclamation-circle text-[#C6363C] text-sm mt-0.5 flex-shrink-0"></i>
+                <span class="text-sm text-red-700">{{ errorMessage() }}</span>
+              </div>
+            }
+
+            @if (successMessage()) {
+              <div class="flex items-start gap-2 bg-green-50 border-l-4 border-green-600 px-3 py-2.5 rounded-r">
+                <i class="pi pi-check-circle text-green-600 text-sm mt-0.5 flex-shrink-0"></i>
+                <span class="text-sm text-green-700">{{ successMessage() }}</span>
+              </div>
+            }
+
+            <div class="flex flex-col gap-1.5">
+              <label for="username" class="text-sm font-medium text-gray-700">Корисничко име</label>
+              <input
+                pInputText
+                id="username"
+                formControlName="username"
+                placeholder="Унесите корисничко име"
+                class="w-full"
+                [class.ng-invalid]="registerForm.get('username')?.invalid && registerForm.get('username')?.touched"
+              />
+              @if (registerForm.get('username')?.invalid && registerForm.get('username')?.touched) {
+                <small class="text-[#C6363C]">
+                  @if (registerForm.get('username')?.errors?.['required']) {
+                    Корисничко име је обавезно
+                  }
+                  @if (registerForm.get('username')?.errors?.['minlength']) {
+                    Корисничко име мора имати најмање 3 карактера
+                  }
+                </small>
+              }
+            </div>
+
+            <div class="flex flex-col gap-1.5">
+              <label for="email" class="text-sm font-medium text-gray-700">Имејл адреса</label>
+              <input
+                pInputText
+                id="email"
+                formControlName="email"
+                placeholder="Унесите имејл адресу"
+                type="email"
+                class="w-full"
+                [class.ng-invalid]="registerForm.get('email')?.invalid && registerForm.get('email')?.touched"
+              />
+              @if (registerForm.get('email')?.invalid && registerForm.get('email')?.touched) {
+                <small class="text-[#C6363C]">
+                  @if (registerForm.get('email')?.errors?.['required']) {
+                    Имејл адреса је обавезна
+                  }
+                  @if (registerForm.get('email')?.errors?.['email']) {
+                    Унесите исправну имејл адресу
+                  }
+                </small>
+              }
+            </div>
+
+            <div class="flex flex-col gap-1.5">
+              <label for="password" class="text-sm font-medium text-gray-700">Лозинка</label>
+              <p-password
+                id="password"
+                formControlName="password"
+                placeholder="Унесите лозинку"
+                [toggleMask]="true"
+                [feedback]="true"
+                styleClass="w-full"
+                inputStyleClass="w-full"
+                [class.ng-invalid]="registerForm.get('password')?.invalid && registerForm.get('password')?.touched"
+              ></p-password>
+              @if (registerForm.get('password')?.invalid && registerForm.get('password')?.touched) {
+                <small class="text-[#C6363C]">
+                  @if (registerForm.get('password')?.errors?.['required']) {
+                    Лозинка је обавезна
+                  }
+                  @if (registerForm.get('password')?.errors?.['minlength']) {
+                    Лозинка мора имати најмање 6 карактера
+                  }
+                </small>
+              }
+            </div>
+
+            <div class="flex flex-col gap-1.5">
+              <label for="confirmPassword" class="text-sm font-medium text-gray-700">Потврда лозинке</label>
+              <p-password
+                id="confirmPassword"
+                formControlName="confirmPassword"
+                placeholder="Поновите лозинку"
+                [toggleMask]="true"
+                [feedback]="false"
+                styleClass="w-full"
+                inputStyleClass="w-full"
+                [class.ng-invalid]="registerForm.get('confirmPassword')?.invalid && registerForm.get('confirmPassword')?.touched || registerForm.errors?.['passwordMismatch']"
+              ></p-password>
+              @if (registerForm.get('confirmPassword')?.touched && registerForm.errors?.['passwordMismatch']) {
+                <small class="text-[#C6363C]">Лозинке се не подударају</small>
+              }
+            </div>
+
+            <div class="flex flex-col gap-1.5">
+              <label for="role" class="text-sm font-medium text-gray-700">Улога</label>
+              <p-select
+                id="role"
+                formControlName="role"
+                [options]="roles"
+                optionLabel="label"
+                optionValue="value"
+                placeholder="Изаберите улогу"
+                styleClass="w-full"
+              ></p-select>
+            </div>
+
+            <div class="pt-1 flex flex-col gap-3">
+              <p-button
+                type="submit"
+                label="Региструј се"
+                [disabled]="registerForm.invalid || isLoading()"
+                [loading]="isLoading()"
+                styleClass="w-full"
+              ></p-button>
+              <div class="text-center">
+                <span class="text-sm text-gray-500">Већ имате налог? </span>
+                <button
+                  type="button"
+                  (click)="goToLogin()"
+                  class="text-sm text-[#003893] font-medium hover:underline"
+                >
+                  Пријавите се овде
+                </button>
+              </div>
+            </div>
+
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <footer class="border-t border-gray-200 bg-white">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3 flex items-center justify-between">
+      <p class="text-xs text-gray-400">© 2026 Министарство унутрашњих послова Републике Србије</p>
+      <div class="flex items-center gap-0.5">
+        <div class="w-4 h-2.5 bg-[#C6363C] rounded-sm"></div>
+        <div class="w-4 h-2.5 bg-[#003893] rounded-sm"></div>
+        <div class="w-4 h-2.5 bg-gray-200 rounded-sm border border-gray-300"></div>
+      </div>
+    </div>
+  </footer>
+
 </div>

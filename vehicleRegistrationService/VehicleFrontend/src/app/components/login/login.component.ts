@@ -6,8 +6,6 @@ import { CommonModule } from '@angular/common';
 import { InputTextModule } from 'primeng/inputtext';
 import { PasswordModule } from 'primeng/password';
 import { ButtonModule } from 'primeng/button';
-import { CardModule } from 'primeng/card';
-import { MessageModule } from 'primeng/message';
 
 import { AuthService } from '../../services/auth.service';
 import { LoginRequest } from '../../models/auth.models';
@@ -20,9 +18,7 @@ import { LoginRequest } from '../../models/auth.models';
     ReactiveFormsModule,
     InputTextModule,
     PasswordModule,
-    ButtonModule,
-    CardModule,
-    MessageModule
+    ButtonModule
   ],
   templateUrl: './login.component.html',
   styleUrl: './login.component.css'
@@ -62,13 +58,8 @@ export class LoginComponent {
         this.authService.saveUserData(response.data.user);
         this.isLoading.set(false);
 
-        const returnUrl = this.authService.getReturnUrl();
-        if (returnUrl) {
-          this.authService.clearReturnUrl();
-          this.router.navigateByUrl(returnUrl);
-        } else {
-          this.router.navigate(['/']);
-        }
+        this.authService.clearReturnUrl();
+        this.router.navigate(['/']);
 
         console.log('Login successful');
       },
@@ -81,5 +72,9 @@ export class LoginComponent {
 
   goToRegister(): void {
     this.router.navigate(['/register']);
+  }
+
+  goToHome(): void {
+    this.router.navigate(['/']);
   }
 }

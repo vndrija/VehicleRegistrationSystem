@@ -45,6 +45,11 @@ export const routes: Routes = [
     loadComponent: () => import('./components/change-plates/change-plates.component').then(m => m.ChangePlatesComponent)
   },
   {
+    path: 'services/deregister-vehicle',
+    canActivate: [authGuard],
+    loadComponent: () => import('./components/deregister-vehicle/deregister-vehicle.component').then(m => m.DeregisterVehicleComponent)
+  },
+  {
     path: 'services/:serviceName',
     canActivate: [authGuard],
     loadComponent: () => import('./components/home/home.component').then(m => m.HomeComponent)

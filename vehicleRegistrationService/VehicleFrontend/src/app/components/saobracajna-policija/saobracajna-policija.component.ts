@@ -61,6 +61,19 @@ export class SaobracajnaPolicija implements OnInit {
   payingId = signal<number | null>(null);
   downloadingId = signal<number | null>(null);
 
+  showIssueViolationForm = signal(false);
+  isIssuingViolation = signal(false);
+  issueViolationError = signal('');
+  issueViolationSuccess = signal('');
+  issueViolationForm = this.fb.group({
+    vehiclePlate: ['', [Validators.required, Validators.minLength(3)]],
+    type: ['SPEEDING', Validators.required],
+    description: ['', [Validators.required, Validators.minLength(5)]],
+    location: ['', Validators.required],
+    fineAmount: [0, [Validators.required, Validators.min(1)]],
+    offenderEmail: ['', [Validators.email]]
+  });
+
   // ── Accidents ────────────────────────────────────────────────────
   accidentsPlate = '';
   accidents = signal<Accident[]>([]);
@@ -83,6 +96,19 @@ export class SaobracajnaPolicija implements OnInit {
   officers = signal<Officer[]>([]);
   isOfficersLoading = signal(false);
 
+  showAddOfficerForm = signal(false);
+  isAddingOfficer = signal(false);
+  addOfficerError = signal('');
+  addOfficerSuccess = signal('');
+  addOfficerForm = this.fb.group({
+    badgeNumber: ['', [Validators.required, Validators.minLength(3)]],
+    firstName: ['', Validators.required],
+    lastName: ['', Validators.required],
+    rank: ['Полицајац', Validators.required],
+    stationId: ['', Validators.required],
+    userId: ['']
+  });
+
   // ── Flags ────────────────────────────────────────────────────────
   flagsPlate = '';
   flags = signal<VehicleFlag[]>([]);
@@ -91,11 +117,26 @@ export class SaobracajnaPolicija implements OnInit {
   flagsError = signal('');
   resolvingFlagId = signal<number | null>(null);
 
+  showAddFlagForm = signal(false);
+  isAddingFlag = signal(false);
+  addFlagError = signal('');
+  addFlagSuccess = signal('');
+  addFlagForm = this.fb.group({
+    vehiclePlate: ['', [Validators.required, Validators.minLength(3)]],
+    flagType: ['', Validators.required],
+    description: ['', [Validators.required, Validators.minLength(5)]]
+  });
+
   // ────────────────────────────────────────────────────────────────
   ngOnInit() {
-    this.loadStolenVehicles();
-    this.loadOfficers();
-  }
+  // DEBUG CHECK
+  const t = localStorage.getItem('token');
+  console.log('Component Init - Token in storage:', t ? t.substring(0, 10) + '...' : 'NULL');
+
+  this.loadStolenVehicles();
+  this.loadOfficers();
+}
+
 
   setTab(tab: Tab) { this.activeTab.set(tab); }
 
@@ -155,6 +196,35 @@ export class SaobracajnaPolicija implements OnInit {
     this.policeService.getViolationsByPlate(plate).subscribe({
       next: (data) => { this.violations.set(data); this.isViolationsLoading.set(false); },
       error: () => { this.violationsError.set('Грешка при претрази.'); this.isViolationsLoading.set(false); }
+    });
+  }
+
+  toggleIssueViolationForm() {
+    this.showIssueViolationForm.update(v => !v);
+    this.issueViolationError.set('');
+    this.issueViolationSuccess.set('');
+    if (!this.showIssueViolationForm()) this.issueViolationForm.reset({ type: 'SPEEDING', fineAmount: 0 });
+  }
+
+  issueViolation() {
+    if (this.issueViolationForm.invalid) { this.issueViolationForm.markAllAsTouched(); return; }
+    this.isIssuingViolation.set(true);
+    this.issueViolationError.set('');
+    
+    // Default officerId for now
+    const dto = { ...this.issueViolationForm.value, officerId: 1 } as any;
+
+    this.policeService.issueViolation(dto).subscribe({
+      next: () => {
+        this.isIssuingViolation.set(false);
+        this.issueViolationSuccess.set('Прекршај је успешно евидентиран.');
+        this.issueViolationForm.reset({ type: 'SPEEDING', fineAmount: 0 });
+        if (this.violationsPlate === dto.vehiclePlate) {
+          this.searchViolations();
+        }
+        setTimeout(() => { this.showIssueViolationForm.set(false); this.issueViolationSuccess.set(''); }, 3000);
+      },
+      error: () => { this.issueViolationError.set('Грешка при евидентирању прекршаја.'); this.isIssuingViolation.set(false); }
     });
   }
 
@@ -236,6 +306,29 @@ export class SaobracajnaPolicija implements OnInit {
     });
   }
 
+  toggleAddOfficerForm() {
+    this.showAddOfficerForm.update(v => !v);
+    this.addOfficerError.set('');
+    this.addOfficerSuccess.set('');
+    if (!this.showAddOfficerForm()) this.addOfficerForm.reset({ rank: 'Полицајац' });
+  }
+
+  addOfficer() {
+    if (this.addOfficerForm.invalid) { this.addOfficerForm.markAllAsTouched(); return; }
+    this.isAddingOfficer.set(true);
+    this.addOfficerError.set('');
+    this.policeService.createOfficer(this.addOfficerForm.value as any).subscribe({
+      next: () => {
+        this.isAddingOfficer.set(false);
+        this.addOfficerSuccess.set('Службеник је успешно додат.');
+        this.addOfficerForm.reset({ rank: 'Полицајац' });
+        this.loadOfficers();
+        setTimeout(() => { this.showAddOfficerForm.set(false); this.addOfficerSuccess.set(''); }, 3000);
+      },
+      error: () => { this.addOfficerError.set('Грешка при додавању службеника.'); this.isAddingOfficer.set(false); }
+    });
+  }
+
   // ── Flags ────────────────────────────────────────────────────────
   searchFlags() {
     const plate = this.flagsPlate.trim();
@@ -246,6 +339,32 @@ export class SaobracajnaPolicija implements OnInit {
     this.policeService.getFlagsByPlate(plate).subscribe({
       next: (data) => { this.flags.set(data); this.isFlagsLoading.set(false); },
       error: () => { this.flagsError.set('Грешка при претрази.'); this.isFlagsLoading.set(false); }
+    });
+  }
+
+  toggleAddFlagForm() {
+    this.showAddFlagForm.update(v => !v);
+    this.addFlagError.set('');
+    this.addFlagSuccess.set('');
+    if (!this.showAddFlagForm()) this.addFlagForm.reset();
+  }
+
+  addFlag() {
+    if (this.addFlagForm.invalid) { this.addFlagForm.markAllAsTouched(); return; }
+    this.isAddingFlag.set(true);
+    this.addFlagError.set('');
+    this.policeService.addFlag(this.addFlagForm.value as any).subscribe({
+      next: () => {
+        this.isAddingFlag.set(false);
+        this.addFlagSuccess.set('Маркирање је успешно додато.');
+        const plate = this.addFlagForm.get('vehiclePlate')?.value;
+        this.addFlagForm.reset();
+        if (this.flagsPlate === plate) {
+          this.searchFlags();
+        }
+        setTimeout(() => { this.showAddFlagForm.set(false); this.addFlagSuccess.set(''); }, 3000);
+      },
+      error: () => { this.addFlagError.set('Грешка при додавању маркирања.'); this.isAddingFlag.set(false); }
     });
   }
 

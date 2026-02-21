@@ -78,6 +78,31 @@ export interface ReportAccidentDto {
   involvedPlates: string;
 }
 
+export interface IssueViolationDto {
+  vehiclePlate: string;
+  officerId: number;
+  type: string;
+  description: string;
+  location: string;
+  fineAmount: number;
+  offenderEmail?: string;
+}
+
+export interface CreateOfficerDto {
+  badgeNumber: string;
+  firstName: string;
+  lastName: string;
+  rank: string;
+  stationId: string;
+  userId: string;
+}
+
+export interface AddFlagDto {
+  vehiclePlate: string;
+  flagType: string;
+  description: string;
+}
+
 @Injectable({ providedIn: 'root' })
 export class TrafficPoliceService {
   private http = inject(HttpClient);
@@ -97,6 +122,9 @@ export class TrafficPoliceService {
   }
 
   // Violations
+  issueViolation(dto: IssueViolationDto): Observable<Violation> {
+    return this.http.post<Violation>(`${this.api}/violations`, dto);
+  }
   getViolationsByPlate(plate: string): Observable<Violation[]> {
     return this.http.get<Violation[]>(`${this.api}/violations/plate/${encodeURIComponent(plate)}`);
   }
@@ -119,10 +147,16 @@ export class TrafficPoliceService {
   getOfficers(): Observable<Officer[]> {
     return this.http.get<Officer[]>(`${this.api}/officers`);
   }
+  createOfficer(dto: CreateOfficerDto): Observable<Officer> {
+    return this.http.post<Officer>(`${this.api}/officers`, dto);
+  }
 
   // Flags
   getFlagsByPlate(plate: string): Observable<VehicleFlag[]> {
     return this.http.get<VehicleFlag[]>(`${this.api}/flags/${encodeURIComponent(plate)}`);
+  }
+  addFlag(dto: AddFlagDto): Observable<VehicleFlag> {
+    return this.http.post<VehicleFlag>(`${this.api}/flags`, dto);
   }
   resolveFlag(id: number): Observable<{ message: string }> {
     return this.http.put<{ message: string }>(`${this.api}/flags/${id}/resolve`, {});

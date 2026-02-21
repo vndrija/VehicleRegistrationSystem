@@ -1,4 +1,5 @@
 <app-navbar></app-navbar>
+<p-toast></p-toast>
 
 <!-- Tricolor stripe -->
 <div class="flex" style="height: 4px">
@@ -9,7 +10,7 @@
 
 <!-- Page header -->
 <div class="bg-[#C6363C]">
-  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+  <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
     <button class="flex items-center gap-1.5 text-red-200 hover:text-white text-xs mb-3 transition-colors" (click)="goBack()">
       <i class="pi pi-arrow-left" style="font-size: 0.65rem"></i>
       Назад на еУправу
@@ -18,35 +19,817 @@
       Министарство унутрашњих послова — Република Србија
     </p>
     <h1 class="text-xl font-bold text-white">Саобраћајна Полиција</h1>
+    <p class="text-red-100 text-sm mt-0.5">Провера возила, евиденција прекршаја, потражна возила и службеничка мрежа</p>
   </div>
 </div>
 
-<div class="min-h-screen bg-[#EEF2F8] py-16">
-  <div class="max-w-lg mx-auto px-4 text-center">
-    <div class="bg-white border border-gray-200 rounded-lg shadow-sm px-8 py-12">
-      <div class="w-16 h-16 bg-[#EEF2F8] rounded-full flex items-center justify-center mx-auto mb-5">
-        <svg xmlns="http://www.w3.org/2000/svg" class="w-8 h-8 text-[#003893]" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
-          <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z" />
-        </svg>
-      </div>
-      <h2 class="text-lg font-bold text-gray-900 mb-2">Ускоро доступно</h2>
-      <p class="text-sm text-gray-500 leading-relaxed mb-6">
-        Услуге саобраћајне полиције — провера прекршаја, потражна возила и евиденција казни — биће доступне у наредном периоду.
-      </p>
-      <button
-        (click)="goBack()"
-        class="inline-flex items-center gap-2 text-sm text-[#003893] font-medium hover:underline"
+<!-- Tab navigation -->
+<div class="bg-white border-b border-gray-200 sticky top-0 z-20 shadow-sm">
+  <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+    <nav class="flex overflow-x-auto gap-0 -mb-px">
+
+      <button type="button"
+        class="flex items-center gap-1.5 px-4 py-3 text-sm font-medium whitespace-nowrap border-b-2 transition-colors"
+        [class.border-[#C6363C]]="activeTab() === 'check'"
+        [class.text-[#C6363C]]="activeTab() === 'check'"
+        [class.border-transparent]="activeTab() !== 'check'"
+        [class.text-gray-500]="activeTab() !== 'check'"
+        [class.hover:text-gray-700]="activeTab() !== 'check'"
+        (click)="setTab('check')"
       >
-        <i class="pi pi-arrow-left text-xs"></i>
-        Назад на главну страну
+        <i class="pi pi-search text-xs"></i> Провера возила
       </button>
-    </div>
+
+      <button type="button"
+        class="flex items-center gap-1.5 px-4 py-3 text-sm font-medium whitespace-nowrap border-b-2 transition-colors"
+        [class.border-[#C6363C]]="activeTab() === 'stolen'"
+        [class.text-[#C6363C]]="activeTab() === 'stolen'"
+        [class.border-transparent]="activeTab() !== 'stolen'"
+        [class.text-gray-500]="activeTab() !== 'stolen'"
+        [class.hover:text-gray-700]="activeTab() !== 'stolen'"
+        (click)="setTab('stolen')"
+      >
+        <i class="pi pi-car text-xs"></i> Потражна возила
+        @if (stolenVehicles().length > 0) {
+          <span class="ml-1 text-[10px] font-bold bg-red-100 text-red-700 rounded-full px-1.5 py-0.5">
+            {{ stolenVehicles().length }}
+          </span>
+        }
+      </button>
+
+      <button type="button"
+        class="flex items-center gap-1.5 px-4 py-3 text-sm font-medium whitespace-nowrap border-b-2 transition-colors"
+        [class.border-[#C6363C]]="activeTab() === 'violations'"
+        [class.text-[#C6363C]]="activeTab() === 'violations'"
+        [class.border-transparent]="activeTab() !== 'violations'"
+        [class.text-gray-500]="activeTab() !== 'violations'"
+        [class.hover:text-gray-700]="activeTab() !== 'violations'"
+        (click)="setTab('violations')"
+      >
+        <i class="pi pi-file-edit text-xs"></i> Прекршаји
+      </button>
+
+      <button type="button"
+        class="flex items-center gap-1.5 px-4 py-3 text-sm font-medium whitespace-nowrap border-b-2 transition-colors"
+        [class.border-[#C6363C]]="activeTab() === 'accidents'"
+        [class.text-[#C6363C]]="activeTab() === 'accidents'"
+        [class.border-transparent]="activeTab() !== 'accidents'"
+        [class.text-gray-500]="activeTab() !== 'accidents'"
+        [class.hover:text-gray-700]="activeTab() !== 'accidents'"
+        (click)="setTab('accidents')"
+      >
+        <i class="pi pi-exclamation-circle text-xs"></i> Незгоде
+      </button>
+
+      <button type="button"
+        class="flex items-center gap-1.5 px-4 py-3 text-sm font-medium whitespace-nowrap border-b-2 transition-colors"
+        [class.border-[#C6363C]]="activeTab() === 'officers'"
+        [class.text-[#C6363C]]="activeTab() === 'officers'"
+        [class.border-transparent]="activeTab() !== 'officers'"
+        [class.text-gray-500]="activeTab() !== 'officers'"
+        [class.hover:text-gray-700]="activeTab() !== 'officers'"
+        (click)="setTab('officers')"
+      >
+        <i class="pi pi-shield text-xs"></i> Службеници
+      </button>
+
+      <button type="button"
+        class="flex items-center gap-1.5 px-4 py-3 text-sm font-medium whitespace-nowrap border-b-2 transition-colors"
+        [class.border-[#C6363C]]="activeTab() === 'flags'"
+        [class.text-[#C6363C]]="activeTab() === 'flags'"
+        [class.border-transparent]="activeTab() !== 'flags'"
+        [class.text-gray-500]="activeTab() !== 'flags'"
+        [class.hover:text-gray-700]="activeTab() !== 'flags'"
+        (click)="setTab('flags')"
+      >
+        <i class="pi pi-flag text-xs"></i> Маркирана возила
+      </button>
+
+    </nav>
+  </div>
+</div>
+
+<!-- Content area -->
+<div class="min-h-screen bg-[#EEF2F8] py-8">
+  <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+
+    <!-- ══════════════════════════════════════════════════════════════
+         TAB: Провера возила (Vehicle Dossier)
+    ══════════════════════════════════════════════════════════════ -->
+    @if (activeTab() === 'check') {
+      <div class="space-y-5">
+
+        <!-- Search card -->
+        <div class="bg-white border border-gray-200 rounded-lg shadow-sm overflow-hidden">
+          <div class="px-5 py-3 bg-[#C6363C] flex items-center gap-2 text-white">
+            <i class="pi pi-search text-sm"></i>
+            <h2 class="text-base font-semibold">Провера возила по регистарској ознаци</h2>
+          </div>
+          <div class="px-5 py-5">
+            <p class="text-sm text-gray-500 mb-4">
+              Унесите регистарску ознаку да бисте добили потпун полицијски досије: статус крађе, активне налоге, неплаћене казне и историју незгода.
+            </p>
+            <div class="flex gap-2">
+              <input
+                type="text"
+                [(ngModel)]="checkPlate"
+                placeholder="нпр. BG-123-AB"
+                (keyup.enter)="checkVehicleStatus()"
+                class="flex-1 border border-gray-300 rounded px-3 py-2 text-sm font-mono tracking-wider focus:outline-none focus:ring-1 focus:ring-[#C6363C] focus:border-[#C6363C] uppercase"
+              />
+              <p-button
+                label="Провери"
+                icon="pi pi-search"
+                severity="danger"
+                [loading]="isDossierLoading()"
+                (onClick)="checkVehicleStatus()"
+              ></p-button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Dossier result -->
+        @if (isDossierLoading()) {
+          <div class="flex items-center gap-2 text-sm text-gray-400 py-6 justify-center">
+            <i class="pi pi-spin pi-spinner"></i> Провера у току...
+          </div>
+        }
+
+        @if (dossierError()) {
+          <div class="flex items-start gap-2 bg-red-50 border-l-4 border-[#C6363C] px-4 py-3 rounded-r">
+            <i class="pi pi-exclamation-circle text-[#C6363C] mt-0.5 flex-shrink-0"></i>
+            <span class="text-sm text-red-700">{{ dossierError() }}</span>
+          </div>
+        }
+
+        @if (dossier(); as d) {
+          <!-- Status banner -->
+          @if (d.isStolen) {
+            <div class="flex items-center gap-4 bg-red-600 text-white rounded-lg px-5 py-4 shadow-sm">
+              <i class="pi pi-exclamation-triangle text-2xl flex-shrink-0"></i>
+              <div>
+                <p class="font-bold text-lg tracking-wide">УКРАДЕНО ВОЗИЛО</p>
+                <p class="text-red-100 text-sm">Возило {{ d.plateNumber }} је пријављено као украдено и активно се потражује.</p>
+              </div>
+            </div>
+          } @else {
+            <div class="flex items-center gap-4 bg-green-600 text-white rounded-lg px-5 py-4 shadow-sm">
+              <i class="pi pi-check-circle text-2xl flex-shrink-0"></i>
+              <div>
+                <p class="font-bold text-lg tracking-wide">ВОЗИЛО НИЈЕ ПОТРАЖЕНО</p>
+                <p class="text-green-100 text-sm">Возило {{ d.plateNumber }} није евидентирано у бази потражних возила.</p>
+              </div>
+            </div>
+          }
+
+          <!-- Summary stats -->
+          <div class="grid grid-cols-3 gap-4">
+            <div class="bg-white border border-gray-200 rounded-lg px-5 py-4 text-center shadow-sm">
+              <p class="text-2xl font-bold" [class.text-red-600]="d.activeWarrants.length > 0" [class.text-gray-800]="d.activeWarrants.length === 0">
+                {{ d.activeWarrants.length }}
+              </p>
+              <p class="text-xs text-gray-500 mt-1 uppercase tracking-wide">Активних налога</p>
+            </div>
+            <div class="bg-white border border-gray-200 rounded-lg px-5 py-4 text-center shadow-sm">
+              <p class="text-2xl font-bold" [class.text-orange-600]="d.totalFinesDue > 0" [class.text-gray-800]="d.totalFinesDue === 0">
+                {{ d.totalFinesDue | number:'1.0-0' }} RSD
+              </p>
+              <p class="text-xs text-gray-500 mt-1 uppercase tracking-wide">Неплаћене казне</p>
+            </div>
+            <div class="bg-white border border-gray-200 rounded-lg px-5 py-4 text-center shadow-sm">
+              <p class="text-2xl font-bold" [class.text-yellow-600]="d.accidentCount > 0" [class.text-gray-800]="d.accidentCount === 0">
+                {{ d.accidentCount }}
+              </p>
+              <p class="text-xs text-gray-500 mt-1 uppercase tracking-wide">Незгода у историји</p>
+            </div>
+          </div>
+
+          <!-- Active warrants -->
+          @if (d.activeWarrants.length > 0) {
+            <div class="bg-white border border-gray-200 rounded-lg shadow-sm overflow-hidden">
+              <div class="px-5 py-3 bg-red-50 border-b border-red-200 flex items-center gap-2">
+                <i class="pi pi-flag text-[#C6363C] text-sm"></i>
+                <h3 class="text-sm font-semibold text-red-700">Активни налози / Маркирања</h3>
+              </div>
+              <div class="divide-y divide-gray-100">
+                @for (flag of d.activeWarrants; track flag.ID) {
+                  <div class="px-5 py-3 flex items-start justify-between gap-4">
+                    <div>
+                      <p class="text-sm font-semibold text-gray-800">{{ flag.flagType }}</p>
+                      <p class="text-xs text-gray-500 mt-0.5">{{ flag.description }}</p>
+                    </div>
+                    <span class="text-[10px] font-bold uppercase px-2 py-0.5 rounded-full bg-red-100 text-red-700 border border-red-200 flex-shrink-0">Активно</span>
+                  </div>
+                }
+              </div>
+            </div>
+          }
+
+          <!-- Unpaid violations -->
+          @if (d.unpaidViolations.length > 0) {
+            <div class="bg-white border border-gray-200 rounded-lg shadow-sm overflow-hidden">
+              <div class="px-5 py-3 bg-orange-50 border-b border-orange-200 flex items-center gap-2">
+                <i class="pi pi-wallet text-orange-600 text-sm"></i>
+                <h3 class="text-sm font-semibold text-orange-700">Неплаћене казне</h3>
+              </div>
+              <div class="overflow-x-auto">
+                <table class="w-full text-sm">
+                  <thead>
+                    <tr class="bg-[#EEF2F8] text-left">
+                      <th class="px-4 py-2.5 text-xs font-semibold text-gray-500 uppercase tracking-wide">Тип</th>
+                      <th class="px-4 py-2.5 text-xs font-semibold text-gray-500 uppercase tracking-wide">Опис</th>
+                      <th class="px-4 py-2.5 text-xs font-semibold text-gray-500 uppercase tracking-wide">Износ</th>
+                      <th class="px-4 py-2.5 text-xs font-semibold text-gray-500 uppercase tracking-wide">Датум</th>
+                    </tr>
+                  </thead>
+                  <tbody class="divide-y divide-gray-100">
+                    @for (v of d.unpaidViolations; track v.ID) {
+                      <tr>
+                        <td class="px-4 py-3 text-xs font-medium text-gray-700">{{ violationTypeLabel(v.type) }}</td>
+                        <td class="px-4 py-3 text-gray-600 text-xs">{{ v.description }}</td>
+                        <td class="px-4 py-3 font-semibold text-orange-700 whitespace-nowrap">{{ v.fineAmount | number:'1.0-0' }} RSD</td>
+                        <td class="px-4 py-3 text-gray-400 text-xs whitespace-nowrap">{{ formatDate(v.violationDate) }}</td>
+                      </tr>
+                    }
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          }
+
+          <!-- All clear -->
+          @if (d.activeWarrants.length === 0 && d.unpaidViolations.length === 0 && !d.isStolen) {
+            <div class="bg-white border border-gray-200 rounded-lg px-5 py-8 text-center shadow-sm">
+              <i class="pi pi-check-circle text-green-500 text-3xl mb-3 block"></i>
+              <p class="text-sm text-gray-600">Нема активних налога нити неплаћених казни за ово возило.</p>
+            </div>
+          }
+        }
+
+        @if (!dossierSearched() && !isDossierLoading()) {
+          <div class="bg-white border border-gray-200 rounded-lg px-5 py-10 text-center shadow-sm">
+            <i class="pi pi-search text-gray-300 text-4xl mb-3 block"></i>
+            <p class="text-sm text-gray-400">Унесите регистарску ознаку изнад да бисте покренули проверу.</p>
+          </div>
+        }
+      </div>
+    }
+
+    <!-- ══════════════════════════════════════════════════════════════
+         TAB: Потражна возила (Stolen)
+    ══════════════════════════════════════════════════════════════ -->
+    @if (activeTab() === 'stolen') {
+      <div class="space-y-5">
+
+        <!-- Stolen list card -->
+        <div class="bg-white border border-gray-200 rounded-lg shadow-sm overflow-hidden">
+          <div class="px-5 py-3 bg-[#C6363C] flex items-center justify-between">
+            <div class="flex items-center gap-2 text-white">
+              <i class="pi pi-car text-sm"></i>
+              <h2 class="text-base font-semibold">Евиденција потражних возила</h2>
+            </div>
+            @if (!isStolenLoading()) {
+              <span class="text-xs bg-white/20 text-white rounded-full px-2.5 py-0.5 font-medium">
+                {{ stolenVehicles().length }} возила
+              </span>
+            }
+          </div>
+          <div class="px-5 py-5">
+            @if (isStolenLoading()) {
+              <div class="flex items-center gap-2 text-sm text-gray-400 py-6 justify-center">
+                <i class="pi pi-spin pi-spinner"></i> Учитавање...
+              </div>
+            } @else if (stolenVehicles().length === 0) {
+              <div class="py-10 text-center">
+                <i class="pi pi-check-circle text-green-400 text-3xl mb-3 block"></i>
+                <p class="text-sm text-gray-500">Тренутно нема потражних возила у евиденцији.</p>
+              </div>
+            } @else {
+              <div class="overflow-x-auto">
+                <table class="w-full text-sm">
+                  <thead>
+                    <tr class="bg-[#EEF2F8] text-left">
+                      <th class="px-3 py-2.5 text-xs font-semibold text-gray-500 uppercase tracking-wide">Регистрација</th>
+                      <th class="px-3 py-2.5 text-xs font-semibold text-gray-500 uppercase tracking-wide">Опис</th>
+                      <th class="px-3 py-2.5 text-xs font-semibold text-gray-500 uppercase tracking-wide">Контакт</th>
+                      <th class="px-3 py-2.5 text-xs font-semibold text-gray-500 uppercase tracking-wide">Датум</th>
+                      <th class="px-3 py-2.5 text-xs font-semibold text-gray-500 uppercase tracking-wide">Статус</th>
+                    </tr>
+                  </thead>
+                  <tbody class="divide-y divide-gray-100">
+                    @for (v of stolenVehicles(); track v.ID) {
+                      <tr class="hover:bg-gray-50 transition-colors">
+                        <td class="px-3 py-3 font-mono font-semibold text-gray-900 tracking-wider">{{ v.vehiclePlate }}</td>
+                        <td class="px-3 py-3 text-gray-600 text-xs max-w-xs">{{ v.description }}</td>
+                        <td class="px-3 py-3 text-gray-600 text-xs">{{ v.contactInfo }}</td>
+                        <td class="px-3 py-3 text-gray-400 text-xs whitespace-nowrap">{{ formatDate(v.reportedDate) }}</td>
+                        <td class="px-3 py-3">
+                          @if (v.status === 'ACTIVE') {
+                            <span class="inline-flex items-center gap-1 text-xs font-semibold px-2 py-0.5 rounded-full bg-red-100 text-red-700 border border-red-200">
+                              <span class="w-1.5 h-1.5 rounded-full bg-red-500 inline-block"></span> Активно
+                            </span>
+                          } @else {
+                            <span class="inline-flex items-center gap-1 text-xs font-semibold px-2 py-0.5 rounded-full bg-green-100 text-green-700 border border-green-200">
+                              <span class="w-1.5 h-1.5 rounded-full bg-green-500 inline-block"></span> Пронађено
+                            </span>
+                          }
+                        </td>
+                      </tr>
+                    }
+                  </tbody>
+                </table>
+              </div>
+            }
+          </div>
+        </div>
+
+        <!-- Report stolen toggle -->
+        <div class="bg-white border border-gray-200 rounded-lg shadow-sm overflow-hidden">
+          <button type="button"
+            class="w-full px-5 py-3 bg-[#EEF2F8] border-b border-gray-200 flex items-center justify-between hover:bg-gray-100 transition-colors"
+            (click)="toggleReportStolenForm()"
+          >
+            <div class="flex items-center gap-2 text-gray-700">
+              <i class="pi pi-plus-circle text-[#C6363C] text-sm"></i>
+              <h2 class="text-base font-semibold">Пријави крађу возила</h2>
+            </div>
+            <i class="pi text-gray-400 text-sm"
+               [class.pi-chevron-down]="!showReportStolenForm()"
+               [class.pi-chevron-up]="showReportStolenForm()"></i>
+          </button>
+
+          @if (showReportStolenForm()) {
+            <div class="px-5 py-5">
+              <form [formGroup]="reportStolenForm" (ngSubmit)="reportStolen()" class="space-y-4">
+                <div>
+                  <label class="block text-xs text-gray-500 uppercase tracking-wide mb-1">Регистарска ознака <span class="text-[#C6363C]">*</span></label>
+                  <input type="text" formControlName="vehiclePlate" placeholder="нпр. BG-123-AB"
+                    class="w-full border rounded px-3 py-2 text-sm font-mono tracking-wider focus:outline-none focus:ring-1 focus:ring-[#C6363C] focus:border-[#C6363C]"
+                    [class.border-red-400]="reportStolenForm.get('vehiclePlate')?.invalid && reportStolenForm.get('vehiclePlate')?.touched"
+                    [class.border-gray-300]="!(reportStolenForm.get('vehiclePlate')?.invalid && reportStolenForm.get('vehiclePlate')?.touched)" />
+                  @if (reportStolenForm.get('vehiclePlate')?.invalid && reportStolenForm.get('vehiclePlate')?.touched) {
+                    <p class="text-xs text-red-600 mt-1">Обавезно поље (мин. 3 знака).</p>
+                  }
+                </div>
+                <div>
+                  <label class="block text-xs text-gray-500 uppercase tracking-wide mb-1">Опис <span class="text-[#C6363C]">*</span></label>
+                  <textarea formControlName="description" rows="3" placeholder="Опишите возило и околности..."
+                    class="w-full border rounded px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-[#C6363C] focus:border-[#C6363C] resize-none"
+                    [class.border-red-400]="reportStolenForm.get('description')?.invalid && reportStolenForm.get('description')?.touched"
+                    [class.border-gray-300]="!(reportStolenForm.get('description')?.invalid && reportStolenForm.get('description')?.touched)"></textarea>
+                  @if (reportStolenForm.get('description')?.invalid && reportStolenForm.get('description')?.touched) {
+                    <p class="text-xs text-red-600 mt-1">Обавезно поље (мин. 10 знакова).</p>
+                  }
+                </div>
+                <div>
+                  <label class="block text-xs text-gray-500 uppercase tracking-wide mb-1">Контакт <span class="text-[#C6363C]">*</span></label>
+                  <input type="text" formControlName="contactInfo" placeholder="Телефон или е-пошта"
+                    class="w-full border rounded px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-[#C6363C] focus:border-[#C6363C]"
+                    [class.border-red-400]="reportStolenForm.get('contactInfo')?.invalid && reportStolenForm.get('contactInfo')?.touched"
+                    [class.border-gray-300]="!(reportStolenForm.get('contactInfo')?.invalid && reportStolenForm.get('contactInfo')?.touched)" />
+                  @if (reportStolenForm.get('contactInfo')?.invalid && reportStolenForm.get('contactInfo')?.touched) {
+                    <p class="text-xs text-red-600 mt-1">Обавезно поље (мин. 5 знакова).</p>
+                  }
+                </div>
+                @if (reportStolenError()) {
+                  <div class="flex items-start gap-2 bg-red-50 border-l-4 border-[#C6363C] px-3 py-2 rounded-r">
+                    <i class="pi pi-exclamation-circle text-[#C6363C] text-sm mt-0.5"></i>
+                    <span class="text-sm text-red-700">{{ reportStolenError() }}</span>
+                  </div>
+                }
+                @if (reportStolenSuccess()) {
+                  <div class="flex items-start gap-2 bg-green-50 border-l-4 border-green-500 px-3 py-2 rounded-r">
+                    <i class="pi pi-check-circle text-green-600 text-sm mt-0.5"></i>
+                    <span class="text-sm text-green-700">{{ reportStolenSuccess() }}</span>
+                  </div>
+                }
+                <div class="flex gap-2 pt-1">
+                  <p-button type="submit" label="Пријави крађу" icon="pi pi-exclamation-triangle" severity="danger" [loading]="isReportingStolenLoading()"></p-button>
+                  <p-button type="button" label="Откажи" icon="pi pi-times" severity="secondary" (onClick)="toggleReportStolenForm()"></p-button>
+                </div>
+              </form>
+            </div>
+          }
+        </div>
+      </div>
+    }
+
+    <!-- ══════════════════════════════════════════════════════════════
+         TAB: Прекршаји (Violations)
+    ══════════════════════════════════════════════════════════════ -->
+    @if (activeTab() === 'violations') {
+      <div class="space-y-5">
+
+        <!-- Search -->
+        <div class="bg-white border border-gray-200 rounded-lg shadow-sm overflow-hidden">
+          <div class="px-5 py-3 bg-[#C6363C] flex items-center gap-2 text-white">
+            <i class="pi pi-file-edit text-sm"></i>
+            <h2 class="text-base font-semibold">Претрага прекршаја по регистарској ознаци</h2>
+          </div>
+          <div class="px-5 py-5">
+            <div class="flex gap-2">
+              <input type="text" [(ngModel)]="violationsPlate" placeholder="нпр. BG-123-AB"
+                (keyup.enter)="searchViolations()"
+                class="flex-1 border border-gray-300 rounded px-3 py-2 text-sm font-mono tracking-wider focus:outline-none focus:ring-1 focus:ring-[#C6363C] focus:border-[#C6363C] uppercase" />
+              <p-button label="Претражи" icon="pi pi-search" severity="danger" [loading]="isViolationsLoading()" (onClick)="searchViolations()"></p-button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Results -->
+        @if (isViolationsLoading()) {
+          <div class="flex items-center gap-2 text-sm text-gray-400 py-6 justify-center">
+            <i class="pi pi-spin pi-spinner"></i> Учитавање...
+          </div>
+        } @else if (violationsError()) {
+          <div class="flex items-start gap-2 bg-red-50 border-l-4 border-[#C6363C] px-4 py-3 rounded-r">
+            <i class="pi pi-exclamation-circle text-[#C6363C] mt-0.5"></i>
+            <span class="text-sm text-red-700">{{ violationsError() }}</span>
+          </div>
+        } @else if (violationsSearched()) {
+          @if (violations().length === 0) {
+            <div class="bg-white border border-gray-200 rounded-lg px-5 py-10 text-center shadow-sm">
+              <i class="pi pi-check-circle text-green-400 text-3xl mb-3 block"></i>
+              <p class="text-sm text-gray-500">Нема евидентираних прекршаја за ово возило.</p>
+            </div>
+          } @else {
+            <div class="bg-white border border-gray-200 rounded-lg shadow-sm overflow-hidden">
+              <div class="px-5 py-3 bg-[#EEF2F8] border-b border-gray-200 flex items-center justify-between">
+                <span class="text-sm font-semibold text-gray-700">Пронађени прекршаји</span>
+                <span class="text-xs text-gray-400">{{ violations().length }} запис(а)</span>
+              </div>
+              <div class="overflow-x-auto">
+                <table class="w-full text-sm">
+                  <thead>
+                    <tr class="bg-gray-50 text-left">
+                      <th class="px-4 py-2.5 text-xs font-semibold text-gray-500 uppercase tracking-wide">#</th>
+                      <th class="px-4 py-2.5 text-xs font-semibold text-gray-500 uppercase tracking-wide">Тип</th>
+                      <th class="px-4 py-2.5 text-xs font-semibold text-gray-500 uppercase tracking-wide">Опис / Локација</th>
+                      <th class="px-4 py-2.5 text-xs font-semibold text-gray-500 uppercase tracking-wide">Казна</th>
+                      <th class="px-4 py-2.5 text-xs font-semibold text-gray-500 uppercase tracking-wide">Датум</th>
+                      <th class="px-4 py-2.5 text-xs font-semibold text-gray-500 uppercase tracking-wide">Статус</th>
+                      <th class="px-4 py-2.5 text-xs font-semibold text-gray-500 uppercase tracking-wide">Акције</th>
+                    </tr>
+                  </thead>
+                  <tbody class="divide-y divide-gray-100">
+                    @for (v of violations(); track v.ID) {
+                      <tr class="hover:bg-gray-50 transition-colors">
+                        <td class="px-4 py-3 text-xs text-gray-400">{{ v.ID }}</td>
+                        <td class="px-4 py-3">
+                          <span class="text-xs font-semibold bg-gray-100 text-gray-700 px-2 py-0.5 rounded">
+                            {{ violationTypeLabel(v.type) }}
+                          </span>
+                        </td>
+                        <td class="px-4 py-3 text-xs text-gray-600 max-w-xs">
+                          <p>{{ v.description }}</p>
+                          @if (v.location) { <p class="text-gray-400 mt-0.5">{{ v.location }}</p> }
+                        </td>
+                        <td class="px-4 py-3 font-semibold text-gray-800 whitespace-nowrap">{{ v.fineAmount | number:'1.0-0' }} RSD</td>
+                        <td class="px-4 py-3 text-xs text-gray-400 whitespace-nowrap">{{ formatDate(v.violationDate) }}</td>
+                        <td class="px-4 py-3">
+                          @if (v.status === 'PENDING') {
+                            <span class="text-xs font-semibold px-2 py-0.5 rounded-full bg-orange-100 text-orange-700 border border-orange-200">Неплаћено</span>
+                          } @else if (v.status === 'PAID') {
+                            <span class="text-xs font-semibold px-2 py-0.5 rounded-full bg-green-100 text-green-700 border border-green-200">Плаћено</span>
+                          } @else {
+                            <span class="text-xs font-semibold px-2 py-0.5 rounded-full bg-gray-100 text-gray-500 border border-gray-200">Одбачено</span>
+                          }
+                        </td>
+                        <td class="px-4 py-3">
+                          <div class="flex items-center gap-1.5">
+                            @if (v.status === 'PENDING') {
+                              <button type="button"
+                                class="text-xs px-2 py-1 bg-green-600 text-white rounded hover:bg-green-700 transition-colors disabled:opacity-50"
+                                [disabled]="payingId() === v.ID"
+                                (click)="payViolation(v.ID)"
+                              >
+                                @if (payingId() === v.ID) { <i class="pi pi-spin pi-spinner"></i> } @else { Плати }
+                              </button>
+                            }
+                            <button type="button"
+                              class="text-xs px-2 py-1 bg-[#003893] text-white rounded hover:bg-blue-900 transition-colors disabled:opacity-50"
+                              [disabled]="downloadingId() === v.ID"
+                              (click)="downloadPdf(v.ID)"
+                            >
+                              @if (downloadingId() === v.ID) { <i class="pi pi-spin pi-spinner"></i> } @else { PDF }
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    }
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          }
+        } @else {
+          <div class="bg-white border border-gray-200 rounded-lg px-5 py-10 text-center shadow-sm">
+            <i class="pi pi-file-edit text-gray-300 text-4xl mb-3 block"></i>
+            <p class="text-sm text-gray-400">Унесите регистарску ознаку изнад за претрагу прекршаја.</p>
+          </div>
+        }
+      </div>
+    }
+
+    <!-- ══════════════════════════════════════════════════════════════
+         TAB: Незгоде (Accidents)
+    ══════════════════════════════════════════════════════════════ -->
+    @if (activeTab() === 'accidents') {
+      <div class="space-y-5">
+
+        <!-- Search -->
+        <div class="bg-white border border-gray-200 rounded-lg shadow-sm overflow-hidden">
+          <div class="px-5 py-3 bg-[#C6363C] flex items-center gap-2 text-white">
+            <i class="pi pi-exclamation-circle text-sm"></i>
+            <h2 class="text-base font-semibold">Претрага незгода по регистарској ознаци</h2>
+          </div>
+          <div class="px-5 py-5">
+            <div class="flex gap-2">
+              <input type="text" [(ngModel)]="accidentsPlate" placeholder="нпр. BG-123-AB"
+                (keyup.enter)="searchAccidents()"
+                class="flex-1 border border-gray-300 rounded px-3 py-2 text-sm font-mono tracking-wider focus:outline-none focus:ring-1 focus:ring-[#C6363C] focus:border-[#C6363C] uppercase" />
+              <p-button label="Претражи" icon="pi pi-search" severity="danger" [loading]="isAccidentsLoading()" (onClick)="searchAccidents()"></p-button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Results -->
+        @if (isAccidentsLoading()) {
+          <div class="flex items-center gap-2 text-sm text-gray-400 py-6 justify-center">
+            <i class="pi pi-spin pi-spinner"></i> Учитавање...
+          </div>
+        } @else if (accidentsError()) {
+          <div class="flex items-start gap-2 bg-red-50 border-l-4 border-[#C6363C] px-4 py-3 rounded-r">
+            <i class="pi pi-exclamation-circle text-[#C6363C] mt-0.5"></i>
+            <span class="text-sm text-red-700">{{ accidentsError() }}</span>
+          </div>
+        } @else if (accidentsSearched()) {
+          @if (accidents().length === 0) {
+            <div class="bg-white border border-gray-200 rounded-lg px-5 py-10 text-center shadow-sm">
+              <i class="pi pi-check-circle text-green-400 text-3xl mb-3 block"></i>
+              <p class="text-sm text-gray-500">Нема евидентираних незгода за ово возило.</p>
+            </div>
+          } @else {
+            <div class="bg-white border border-gray-200 rounded-lg shadow-sm overflow-hidden">
+              <div class="px-5 py-3 bg-[#EEF2F8] border-b border-gray-200 flex items-center justify-between">
+                <span class="text-sm font-semibold text-gray-700">Историја незгода</span>
+                <span class="text-xs text-gray-400">{{ accidents().length }} запис(а)</span>
+              </div>
+              <div class="divide-y divide-gray-100">
+                @for (a of accidents(); track a.ID) {
+                  <div class="px-5 py-4 flex items-start justify-between gap-4">
+                    <div class="flex-1 min-w-0">
+                      <div class="flex items-center gap-2 mb-1">
+                        <span class="text-xs font-bold px-2 py-0.5 rounded border"
+                          [class.bg-yellow-50]="a.severity === 'MINOR'"   [class.text-yellow-700]="a.severity === 'MINOR'"   [class.border-yellow-200]="a.severity === 'MINOR'"
+                          [class.bg-orange-50]="a.severity === 'MAJOR'"   [class.text-orange-700]="a.severity === 'MAJOR'"   [class.border-orange-200]="a.severity === 'MAJOR'"
+                          [class.bg-red-50]="a.severity === 'CRITICAL'"   [class.text-red-700]="a.severity === 'CRITICAL'"   [class.border-red-200]="a.severity === 'CRITICAL'"
+                          [class.bg-gray-900]="a.severity === 'FATAL'"    [class.text-white]="a.severity === 'FATAL'"          [class.border-gray-900]="a.severity === 'FATAL'"
+                        >{{ severityLabel(a.severity) }}</span>
+                        <span class="text-xs text-gray-400">{{ formatDate(a.accidentDate) }}</span>
+                      </div>
+                      <p class="text-sm text-gray-800 font-medium">{{ a.location }}</p>
+                      <p class="text-xs text-gray-500 mt-0.5">{{ a.description }}</p>
+                      @if (a.involvedPlates) {
+                        <p class="text-xs text-gray-400 mt-1">Укључена возила: <span class="font-mono font-semibold text-gray-600">{{ a.involvedPlates }}</span></p>
+                      }
+                    </div>
+                    <div class="flex-shrink-0">
+                      @if (a.isResolved) {
+                        <span class="text-xs font-semibold px-2 py-0.5 rounded-full bg-green-100 text-green-700 border border-green-200">Решено</span>
+                      } @else {
+                        <span class="text-xs font-semibold px-2 py-0.5 rounded-full bg-orange-100 text-orange-700 border border-orange-200">Отворено</span>
+                      }
+                    </div>
+                  </div>
+                }
+              </div>
+            </div>
+          }
+        } @else {
+          <div class="bg-white border border-gray-200 rounded-lg px-5 py-10 text-center shadow-sm">
+            <i class="pi pi-exclamation-circle text-gray-300 text-4xl mb-3 block"></i>
+            <p class="text-sm text-gray-400">Унесите регистарску ознаку изнад за претрагу незгода.</p>
+          </div>
+        }
+
+        <!-- Report accident toggle -->
+        <div class="bg-white border border-gray-200 rounded-lg shadow-sm overflow-hidden">
+          <button type="button"
+            class="w-full px-5 py-3 bg-[#EEF2F8] border-b border-gray-200 flex items-center justify-between hover:bg-gray-100 transition-colors"
+            (click)="toggleReportAccidentForm()"
+          >
+            <div class="flex items-center gap-2 text-gray-700">
+              <i class="pi pi-plus-circle text-[#C6363C] text-sm"></i>
+              <h2 class="text-base font-semibold">Пријави саобраћајну незгоду</h2>
+            </div>
+            <i class="pi text-gray-400 text-sm"
+               [class.pi-chevron-down]="!showReportAccidentForm()"
+               [class.pi-chevron-up]="showReportAccidentForm()"></i>
+          </button>
+
+          @if (showReportAccidentForm()) {
+            <div class="px-5 py-5">
+              <form [formGroup]="reportAccidentForm" (ngSubmit)="reportAccident()" class="space-y-4">
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div>
+                    <label class="block text-xs text-gray-500 uppercase tracking-wide mb-1">Локација <span class="text-[#C6363C]">*</span></label>
+                    <input type="text" formControlName="location" placeholder="нпр. Булевар ослобођења 12"
+                      class="w-full border rounded px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-[#C6363C] focus:border-[#C6363C]"
+                      [class.border-red-400]="reportAccidentForm.get('location')?.invalid && reportAccidentForm.get('location')?.touched"
+                      [class.border-gray-300]="!(reportAccidentForm.get('location')?.invalid && reportAccidentForm.get('location')?.touched)" />
+                  </div>
+                  <div>
+                    <label class="block text-xs text-gray-500 uppercase tracking-wide mb-1">Тежина <span class="text-[#C6363C]">*</span></label>
+                    <select formControlName="severity"
+                      class="w-full border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-[#C6363C] focus:border-[#C6363C]">
+                      <option value="MINOR">Лака</option>
+                      <option value="MAJOR">Тешка</option>
+                      <option value="CRITICAL">Критична</option>
+                      <option value="FATAL">Смртоносна</option>
+                    </select>
+                  </div>
+                </div>
+                <div>
+                  <label class="block text-xs text-gray-500 uppercase tracking-wide mb-1">Укључена возила (регистарске ознаке, одвојене зарезом) <span class="text-[#C6363C]">*</span></label>
+                  <input type="text" formControlName="involvedPlates" placeholder="нпр. BG-123-AB, NS-456-CD"
+                    class="w-full border rounded px-3 py-2 text-sm font-mono focus:outline-none focus:ring-1 focus:ring-[#C6363C] focus:border-[#C6363C]"
+                    [class.border-red-400]="reportAccidentForm.get('involvedPlates')?.invalid && reportAccidentForm.get('involvedPlates')?.touched"
+                    [class.border-gray-300]="!(reportAccidentForm.get('involvedPlates')?.invalid && reportAccidentForm.get('involvedPlates')?.touched)" />
+                </div>
+                <div>
+                  <label class="block text-xs text-gray-500 uppercase tracking-wide mb-1">Опис <span class="text-[#C6363C]">*</span></label>
+                  <textarea formControlName="description" rows="3" placeholder="Опишите околности незгоде..."
+                    class="w-full border rounded px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-[#C6363C] focus:border-[#C6363C] resize-none"
+                    [class.border-red-400]="reportAccidentForm.get('description')?.invalid && reportAccidentForm.get('description')?.touched"
+                    [class.border-gray-300]="!(reportAccidentForm.get('description')?.invalid && reportAccidentForm.get('description')?.touched)"></textarea>
+                </div>
+                @if (reportAccidentError()) {
+                  <div class="flex items-start gap-2 bg-red-50 border-l-4 border-[#C6363C] px-3 py-2 rounded-r">
+                    <i class="pi pi-exclamation-circle text-[#C6363C] text-sm mt-0.5"></i>
+                    <span class="text-sm text-red-700">{{ reportAccidentError() }}</span>
+                  </div>
+                }
+                @if (reportAccidentSuccess()) {
+                  <div class="flex items-start gap-2 bg-green-50 border-l-4 border-green-500 px-3 py-2 rounded-r">
+                    <i class="pi pi-check-circle text-green-600 text-sm mt-0.5"></i>
+                    <span class="text-sm text-green-700">{{ reportAccidentSuccess() }}</span>
+                  </div>
+                }
+                <div class="flex gap-2 pt-1">
+                  <p-button type="submit" label="Пријави незгоду" icon="pi pi-exclamation-circle" severity="danger" [loading]="isReportingAccident()"></p-button>
+                  <p-button type="button" label="Откажи" icon="pi pi-times" severity="secondary" (onClick)="toggleReportAccidentForm()"></p-button>
+                </div>
+              </form>
+            </div>
+          }
+        </div>
+      </div>
+    }
+
+    <!-- ══════════════════════════════════════════════════════════════
+         TAB: Службеници (Officers)
+    ══════════════════════════════════════════════════════════════ -->
+    @if (activeTab() === 'officers') {
+      <div class="bg-white border border-gray-200 rounded-lg shadow-sm overflow-hidden">
+        <div class="px-5 py-3 bg-[#C6363C] flex items-center justify-between">
+          <div class="flex items-center gap-2 text-white">
+            <i class="pi pi-shield text-sm"></i>
+            <h2 class="text-base font-semibold">Списак службеника</h2>
+          </div>
+          @if (!isOfficersLoading()) {
+            <span class="text-xs bg-white/20 text-white rounded-full px-2.5 py-0.5 font-medium">
+              {{ officers().length }} службеника
+            </span>
+          }
+        </div>
+        <div class="px-5 py-5">
+          @if (isOfficersLoading()) {
+            <div class="flex items-center gap-2 text-sm text-gray-400 py-6 justify-center">
+              <i class="pi pi-spin pi-spinner"></i> Учитавање...
+            </div>
+          } @else if (officers().length === 0) {
+            <div class="py-10 text-center">
+              <i class="pi pi-shield text-gray-300 text-4xl mb-3 block"></i>
+              <p class="text-sm text-gray-500">Нема евидентираних службеника.</p>
+            </div>
+          } @else {
+            <div class="overflow-x-auto">
+              <table class="w-full text-sm">
+                <thead>
+                  <tr class="bg-[#EEF2F8] text-left">
+                    <th class="px-4 py-2.5 text-xs font-semibold text-gray-500 uppercase tracking-wide">Жетон</th>
+                    <th class="px-4 py-2.5 text-xs font-semibold text-gray-500 uppercase tracking-wide">Презиме и Име</th>
+                    <th class="px-4 py-2.5 text-xs font-semibold text-gray-500 uppercase tracking-wide">Чин</th>
+                    <th class="px-4 py-2.5 text-xs font-semibold text-gray-500 uppercase tracking-wide">Станица</th>
+                  </tr>
+                </thead>
+                <tbody class="divide-y divide-gray-100">
+                  @for (o of officers(); track o.ID) {
+                    <tr class="hover:bg-gray-50 transition-colors">
+                      <td class="px-4 py-3 font-mono font-semibold text-[#003893] text-sm">{{ o.badgeNumber }}</td>
+                      <td class="px-4 py-3 font-medium text-gray-900">{{ o.lastName }} {{ o.firstName }}</td>
+                      <td class="px-4 py-3">
+                        <span class="text-xs font-semibold bg-blue-50 text-[#003893] border border-blue-200 px-2 py-0.5 rounded">{{ o.rank }}</span>
+                      </td>
+                      <td class="px-4 py-3 text-xs text-gray-500">{{ o.stationId || '—' }}</td>
+                    </tr>
+                  }
+                </tbody>
+              </table>
+            </div>
+          }
+        </div>
+      </div>
+    }
+
+    <!-- ══════════════════════════════════════════════════════════════
+         TAB: Маркирана возила (Flags)
+    ══════════════════════════════════════════════════════════════ -->
+    @if (activeTab() === 'flags') {
+      <div class="space-y-5">
+
+        <!-- Search -->
+        <div class="bg-white border border-gray-200 rounded-lg shadow-sm overflow-hidden">
+          <div class="px-5 py-3 bg-[#C6363C] flex items-center gap-2 text-white">
+            <i class="pi pi-flag text-sm"></i>
+            <h2 class="text-base font-semibold">Маркирана возила по регистарској ознаци</h2>
+          </div>
+          <div class="px-5 py-5">
+            <div class="flex gap-2">
+              <input type="text" [(ngModel)]="flagsPlate" placeholder="нпр. BG-123-AB"
+                (keyup.enter)="searchFlags()"
+                class="flex-1 border border-gray-300 rounded px-3 py-2 text-sm font-mono tracking-wider focus:outline-none focus:ring-1 focus:ring-[#C6363C] focus:border-[#C6363C] uppercase" />
+              <p-button label="Претражи" icon="pi pi-search" severity="danger" [loading]="isFlagsLoading()" (onClick)="searchFlags()"></p-button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Results -->
+        @if (isFlagsLoading()) {
+          <div class="flex items-center gap-2 text-sm text-gray-400 py-6 justify-center">
+            <i class="pi pi-spin pi-spinner"></i> Учитавање...
+          </div>
+        } @else if (flagsError()) {
+          <div class="flex items-start gap-2 bg-red-50 border-l-4 border-[#C6363C] px-4 py-3 rounded-r">
+            <i class="pi pi-exclamation-circle text-[#C6363C] mt-0.5"></i>
+            <span class="text-sm text-red-700">{{ flagsError() }}</span>
+          </div>
+        } @else if (flagsSearched()) {
+          @if (flags().length === 0) {
+            <div class="bg-white border border-gray-200 rounded-lg px-5 py-10 text-center shadow-sm">
+              <i class="pi pi-check-circle text-green-400 text-3xl mb-3 block"></i>
+              <p class="text-sm text-gray-500">Нема активних маркирања за ово возило.</p>
+            </div>
+          } @else {
+            <div class="bg-white border border-gray-200 rounded-lg shadow-sm overflow-hidden">
+              <div class="px-5 py-3 bg-[#EEF2F8] border-b border-gray-200 flex items-center justify-between">
+                <span class="text-sm font-semibold text-gray-700">Активна маркирања</span>
+                <span class="text-xs text-gray-400">{{ flags().length }} запис(а)</span>
+              </div>
+              <div class="divide-y divide-gray-100">
+                @for (flag of flags(); track flag.ID) {
+                  <div class="px-5 py-4 flex items-start justify-between gap-4">
+                    <div class="flex-1 min-w-0">
+                      <div class="flex items-center gap-2 mb-1">
+                        <span class="text-xs font-bold bg-red-100 text-red-700 border border-red-200 px-2 py-0.5 rounded">{{ flag.flagType }}</span>
+                      </div>
+                      <p class="text-sm text-gray-600">{{ flag.description }}</p>
+                      <p class="text-xs text-gray-400 mt-0.5">Возило: <span class="font-mono font-semibold text-gray-700">{{ flag.vehiclePlate }}</span></p>
+                    </div>
+                    <div class="flex-shrink-0">
+                      <button type="button"
+                        class="text-xs px-3 py-1.5 bg-gray-600 text-white rounded hover:bg-gray-700 transition-colors disabled:opacity-50 flex items-center gap-1.5"
+                        [disabled]="resolvingFlagId() === flag.ID"
+                        (click)="resolveFlag(flag.ID)"
+                      >
+                        @if (resolvingFlagId() === flag.ID) {
+                          <i class="pi pi-spin pi-spinner text-xs"></i> Обрада...
+                        } @else {
+                          <i class="pi pi-check text-xs"></i> Разреши
+                        }
+                      </button>
+                    </div>
+                  </div>
+                }
+              </div>
+            </div>
+          }
+        } @else {
+          <div class="bg-white border border-gray-200 rounded-lg px-5 py-10 text-center shadow-sm">
+            <i class="pi pi-flag text-gray-300 text-4xl mb-3 block"></i>
+            <p class="text-sm text-gray-400">Унесите регистарску ознаку изнад за претрагу маркирања.</p>
+          </div>
+        }
+      </div>
+    }
+
   </div>
 </div>
 
 <!-- Footer -->
-<footer class="border-t border-gray-200 bg-white">
-  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex items-center justify-between">
+<footer class="mt-6 border-t border-gray-200 bg-white">
+  <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex items-center justify-between">
     <p class="text-xs text-gray-400">© 2026 Министарство унутрашњих послова Републике Србије</p>
     <div class="flex items-center gap-0.5">
       <div class="w-4 h-2.5 bg-[#C6363C] rounded-sm"></div>

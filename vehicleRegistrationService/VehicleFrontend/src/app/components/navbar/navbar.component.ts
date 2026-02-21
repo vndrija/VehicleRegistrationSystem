@@ -56,9 +56,8 @@ export class NavbarComponent {
     return user?.role === 'Admin';
   }
 
-  isPolice(): boolean {
-    const user = this.authService.getUserData();
-    return user?.role === 'Admin' || user?.role === 'TrafficOfficer';
+  isMupVozilaRoute(): boolean {
+    return this.router.url === '/mup-vozila';
   }
 
   goToAdminRequests(): void {
@@ -67,9 +66,5 @@ export class NavbarComponent {
 
   goToTransferRequests(): void {
     this.router.navigate(['/transfer-requests']);
-  }
-
-  goToTrafficPolice(): void {
-    this.router.navigate(['/saobracajna-policija']);
   }
 }

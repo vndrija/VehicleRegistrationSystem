@@ -31,21 +31,18 @@
           </button>
         } @else {
           <!-- Authenticated Links -->
+          @if (isMupVozilaRoute()) {
           <div class="hidden lg:flex items-center gap-1 mr-2 border-r border-gray-200 pr-5">
             @if (isAdmin()) {
               <button (click)="goToAdminRequests()" class="flex items-center gap-2 text-sm font-medium text-gray-600 hover:text-[#0C4076] px-3 py-2 rounded-md hover:bg-blue-50 transition-colors">
                 <i class="pi pi-list text-xs"></i> Захтеви
               </button>
             }
-            @if (isPolice()) {
-              <button (click)="goToTrafficPolice()" class="flex items-center gap-2 text-sm font-medium text-gray-600 hover:text-[#C6363C] px-3 py-2 rounded-md hover:bg-red-50 transition-colors">
-                <i class="pi pi-shield text-xs"></i> Саобраћајна Полиција
-              </button>
-            }
             <button (click)="goToTransferRequests()" class="flex items-center gap-2 text-sm font-medium text-gray-600 hover:text-[#0C4076] px-3 py-2 rounded-md hover:bg-blue-50 transition-colors">
               <i class="pi pi-sync text-xs"></i> Преноси возила
             </button>
           </div>
+          }
 
           <!-- User Profile & Logout -->
           <div class="flex items-center gap-2 pl-2">

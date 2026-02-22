@@ -102,6 +102,11 @@ func main() {
 		// GET /api/police/status/:plate -> Returns EVERYTHING about a car
 		// This is what the frontend uses to show the "Police File"
 		api.GET("/status/:plate", handlers.GetVehicleStatus)
+
+		// --- External Integrations (Proxy) ---
+		// Angular calls THIS -> Go calls C# -> Go returns result
+		api.GET("/lookup/:plate", handlers.ProxyVehicleDetails)
+
 	}
 
 	// -------------------------------------------------------------------------

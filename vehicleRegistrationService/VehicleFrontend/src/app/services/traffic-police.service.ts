@@ -187,7 +187,15 @@ export class TrafficPoliceService {
     return this.http.put<{ message: string }>(`${this.api}/flags/${id}/resolve`, {});
   }
 
-  getVehicleDetails(plate: string): Observable<VehicleApiResponse> {
-    return this.http.get<VehicleApiResponse>(`${this.vehicleApi}/plate/${encodeURIComponent(plate)}`);
+  // ... inside TrafficPoliceService class ...
+
+  // OLD (Delete or Comment out)
+  // private vehicleApi = 'http://localhost:5001/api/vehicles'; 
+  
+  // NEW: Call the proxy endpoint we just made in Go
+  getVehicleDetails(plate: string): Observable<VehicleDetails> { // Note: Return type might change slightly depending on handler
+    // Calls http://localhost:5004/api/police/lookup/BG-123-XX
+    return this.http.get<VehicleDetails>(`${this.api}/lookup/${encodeURIComponent(plate)}`);
   }
+
 }

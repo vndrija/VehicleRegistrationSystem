@@ -73,13 +73,14 @@ export class AccidentsTabComponent {
             return newSet;
           });
 
-          // Call the C# Microservice
+          // Call the Go Proxy (which calls C#)
           this.policeService.getVehicleDetails(plate).subscribe({
-            next: (res) => {
+            next: (vehicle) => {
               // Update Cache
               this.vehicleCache.update(map => {
                 const newMap = new Map(map);
-                newMap.set(plate, res.data);
+                // FIX: 'vehicle' is the object itself, no need for '.data'
+                newMap.set(plate, vehicle); 
                 return newMap;
               });
               // Remove from loading

@@ -26,9 +26,7 @@ func ReportStolen(c *gin.Context) {
 		return
 	}
 
-	// Notify Vehicle Service to flag the car
 	cfg := config.LoadConfig()
-	// We do this asynchronously so we don't block the UI if the other service is slow
 	go services.NotifyVehicleService(input.VehiclePlate, "STOLEN", cfg)
 
 	c.JSON(http.StatusCreated, input)

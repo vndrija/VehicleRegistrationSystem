@@ -3,7 +3,11 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ButtonModule } from 'primeng/button';
 import { MessageService } from 'primeng/api';
-import { TrafficPoliceService, VehicleFlag } from '../../../../services/traffic-police.service';
+import { 
+  TrafficPoliceService, 
+  VehicleFlag, 
+  VehicleDetails 
+} from '../../../../services/traffic-police.service';
 
 @Component({
   selector: 'app-flags-tab',
@@ -22,15 +26,49 @@ export class FlagsTabComponent {
   flagsError = signal('');
   resolvingFlagId = signal<number | null>(null);
 
+  // Cache for vehicle details (Make, Model, Owner)
+  vehicleCache = signal<Map<string, VehicleDetails>>(new Map());
+
   searchFlags() {
     const plate = this.flagsPlate.trim();
     if (!plate) return;
+    
     this.isFlagsLoading.set(true);
     this.flagsError.set('');
     this.flagsSearched.set(true);
+
     this.policeService.getFlagsByPlate(plate).subscribe({
-      next: (data) => { this.flags.set(data); this.isFlagsLoading.set(false); },
-      error: () => { this.flagsError.set('Грешка при претрази.'); this.isFlagsLoading.set(false); }
+      next: (data) => { 
+        this.flags.set(data); 
+        this.isFlagsLoading.set(false);
+        
+        // Fetch vehicle details immediately since we have the plate
+        this.fetchVehicleDetails(plate);
+      },
+      error: () => { 
+        this.flagsError.set('Грешка при претрази.'); 
+        this.isFlagsLoading.set(false); 
+      }
+    });
+  }
+
+  // Helper to fetch rich data from C# Service via Go Proxy
+  private fetchVehicleDetails(plate: string) {
+    // If we already have it, don't fetch again
+    if (this.vehicleCache().has(plate)) return;
+
+    this.policeService.getVehicleDetails(plate).subscribe({
+      next: (vehicle) => {
+        this.vehicleCache.update(map => {
+          const newMap = new Map(map);
+          newMap.set(plate, vehicle);
+          return newMap;
+        });
+      },
+      error: () => {
+        // Silently fail if vehicle registry is down or car not found
+        console.warn(`Could not fetch details for ${plate}`);
+      }
     });
   }
 

@@ -122,6 +122,22 @@ namespace VehicleService.Controllers
         return NoContent();
     }
 
+    [HttpGet("plate/{registrationNumber}")]
+    public async Task<IActionResult> GetByRegistrationNumber(string registrationNumber)
+    {
+        var vehicle = await _db.Vehicles
+            .FirstOrDefaultAsync(v => v.RegistrationNumber == registrationNumber);
+
+        if (vehicle == null)
+            return NotFound(new { message = $"Vehicle with registration number '{registrationNumber}' not found" });
+
+        return Ok(new
+        {
+            message = "Vehicle retrieved successfully",
+            data = vehicle
+        });
+    }
+
     [HttpGet("owner/{ownerName}")]
     public async Task<IActionResult> GetByOwnerName(string ownerName)
     {

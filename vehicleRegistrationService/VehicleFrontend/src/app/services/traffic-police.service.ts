@@ -65,6 +65,24 @@ export interface VehicleDossier {
   totalFinesDue: number;
 }
 
+// --- External Vehicle Service Interfaces ---
+export interface VehicleDetails {
+  id: number;
+  registrationNumber: string;
+  make: string;
+  model: string;
+  color: string;
+  year: number;
+  ownerName: string; 
+  ownerJmbg?: string;
+}
+
+export interface VehicleApiResponse {
+  message: string;
+  data: VehicleDetails;
+}
+// -------------------------------------------
+
 export interface ReportStolenDto {
   vehiclePlate: string;
   description: string;
@@ -106,14 +124,21 @@ export interface AddFlagDto {
 @Injectable({ providedIn: 'root' })
 export class TrafficPoliceService {
   private http = inject(HttpClient);
+  
+  // Existing Traffic Police API (Go)
   private api = environment.apiConfig.trafficPoliceService;
 
-  // Vehicle dossier
+  // New Vehicle Service API (C#)
+  // Assuming C# service runs on port 5001 locally. 
+  // Ideally, add `vehicleService: 'http://localhost:5001/api/vehicles'` to your environment.ts
+  private vehicleApi = environment.apiConfig.vehicleService;
+
+  // ── Vehicle Dossier ──────────────────────────────────────────────────
   getVehicleStatus(plate: string): Observable<VehicleDossier> {
     return this.http.get<VehicleDossier>(`${this.api}/status/${encodeURIComponent(plate)}`);
   }
 
-  // Stolen vehicles
+  // ── Stolen Vehicles ──────────────────────────────────────────────────
   getStolenVehicles(): Observable<StolenVehicle[]> {
     return this.http.get<StolenVehicle[]>(`${this.api}/stolen`);
   }
@@ -121,7 +146,7 @@ export class TrafficPoliceService {
     return this.http.post<StolenVehicle>(`${this.api}/stolen`, dto);
   }
 
-  // Violations
+  // ── Violations ───────────────────────────────────────────────────────
   issueViolation(dto: IssueViolationDto): Observable<Violation> {
     return this.http.post<Violation>(`${this.api}/violations`, dto);
   }
@@ -135,7 +160,7 @@ export class TrafficPoliceService {
     return this.http.get(`${this.api}/violations/${id}/pdf`, { responseType: 'blob' });
   }
 
-  // Accidents
+  // ── Accidents ────────────────────────────────────────────────────────
   getAccidentsByPlate(plate: string): Observable<Accident[]> {
     return this.http.get<Accident[]>(`${this.api}/accidents/plate/${encodeURIComponent(plate)}`);
   }
@@ -143,7 +168,7 @@ export class TrafficPoliceService {
     return this.http.post<any>(`${this.api}/accidents`, dto);
   }
 
-  // Officers
+  // ── Officers ─────────────────────────────────────────────────────────
   getOfficers(): Observable<Officer[]> {
     return this.http.get<Officer[]>(`${this.api}/officers`);
   }
@@ -151,7 +176,7 @@ export class TrafficPoliceService {
     return this.http.post<Officer>(`${this.api}/officers`, dto);
   }
 
-  // Flags
+  // ── Flags ────────────────────────────────────────────────────────────
   getFlagsByPlate(plate: string): Observable<VehicleFlag[]> {
     return this.http.get<VehicleFlag[]>(`${this.api}/flags/${encodeURIComponent(plate)}`);
   }
@@ -160,5 +185,9 @@ export class TrafficPoliceService {
   }
   resolveFlag(id: number): Observable<{ message: string }> {
     return this.http.put<{ message: string }>(`${this.api}/flags/${id}/resolve`, {});
+  }
+
+  getVehicleDetails(plate: string): Observable<VehicleApiResponse> {
+    return this.http.get<VehicleApiResponse>(`${this.vehicleApi}/plate/${encodeURIComponent(plate)}`);
   }
 }

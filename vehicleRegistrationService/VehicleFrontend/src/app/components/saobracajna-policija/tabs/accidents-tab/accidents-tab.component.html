@@ -1,4 +1,5 @@
 <div class="space-y-5">
+  <!-- Search Box -->
   <div class="bg-white border border-gray-200 rounded-lg shadow-sm overflow-hidden">
     <div class="px-5 py-3 bg-[#C6363C] flex items-center gap-2 text-white">
       <i class="pi pi-exclamation-circle text-sm"></i>
@@ -14,6 +15,7 @@
     </div>
   </div>
 
+  <!-- Results -->
   @if (isAccidentsLoading()) {
     <div class="flex items-center gap-2 text-sm text-gray-400 py-6 justify-center">
       <i class="pi pi-spin pi-spinner"></i> Учитавање...
@@ -37,9 +39,10 @@
         </div>
         <div class="divide-y divide-gray-100">
           @for (a of accidents(); track a.ID) {
-            <div class="px-5 py-4 flex items-start justify-between gap-4">
-              <div class="flex-1 min-w-0">
-                <div class="flex items-center gap-2 mb-1">
+            <div class="px-5 py-4 flex flex-col gap-3">
+              <!-- Top Row: Date & Severity -->
+              <div class="flex items-center justify-between">
+                <div class="flex items-center gap-2">
                   <span class="text-xs font-bold px-2 py-0.5 rounded border"
                     [class.bg-yellow-50]="a.severity === 'MINOR'"   [class.text-yellow-700]="a.severity === 'MINOR'"   [class.border-yellow-200]="a.severity === 'MINOR'"
                     [class.bg-orange-50]="a.severity === 'MAJOR'"   [class.text-orange-700]="a.severity === 'MAJOR'"   [class.border-orange-200]="a.severity === 'MAJOR'"
@@ -48,19 +51,57 @@
                   >{{ severityLabel(a.severity) }}</span>
                   <span class="text-xs text-gray-400">{{ formatDate(a.accidentDate) }}</span>
                 </div>
-                <p class="text-sm text-gray-800 font-medium">{{ a.location }}</p>
-                <p class="text-xs text-gray-500 mt-0.5">{{ a.description }}</p>
-                @if (a.involvedPlates) {
-                  <p class="text-xs text-gray-400 mt-1">Укључена возила: <span class="font-mono font-semibold text-gray-600">{{ a.involvedPlates }}</span></p>
-                }
+                <div>
+                    @if (a.isResolved) {
+                        <span class="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-green-100 text-green-700 border border-green-200">Решено</span>
+                    } @else {
+                        <span class="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-orange-100 text-orange-700 border border-orange-200">Отворено</span>
+                    }
+                </div>
               </div>
-              <div class="flex-shrink-0">
-                @if (a.isResolved) {
-                  <span class="text-xs font-semibold px-2 py-0.5 rounded-full bg-green-100 text-green-700 border border-green-200">Решено</span>
-                } @else {
-                  <span class="text-xs font-semibold px-2 py-0.5 rounded-full bg-orange-100 text-orange-700 border border-orange-200">Отворено</span>
-                }
+
+              <!-- Location & Desc -->
+              <div>
+                <p class="text-sm text-gray-800 font-medium"><i class="pi pi-map-marker text-xs mr-1 text-gray-400"></i>{{ a.location }}</p>
+                <p class="text-xs text-gray-500 mt-1 pl-4">{{ a.description }}</p>
               </div>
+
+              <!-- Involved Vehicles (Fetched from C# Service) -->
+              @if (a.involvedPlates) {
+                <div class="mt-2 bg-gray-50 rounded p-3 border border-gray-100">
+                  <p class="text-xs text-gray-400 mb-2 uppercase tracking-wide font-semibold">Укључена возила:</p>
+                  
+                  <div class="flex flex-wrap gap-2">
+                    @for (plate of getPlatesArray(a.involvedPlates); track plate) {
+                      
+                      @if (vehicleCache().get(plate); as vehicle) {
+                        <!-- 🚗 VEHICLE FOUND -->
+                        <div class="flex items-center gap-2 bg-white border border-gray-200 rounded px-2 py-1.5 shadow-sm">
+                          <div class="bg-blue-600 text-white text-[10px] font-mono px-1.5 rounded">{{ plate }}</div>
+                          <div class="flex flex-col">
+                            <span class="text-xs font-bold text-gray-700 leading-none">{{ vehicle.make }} {{ vehicle.model }}</span>
+                            <span class="text-[10px] text-gray-500 leading-none mt-0.5">{{ vehicle.ownerName }} ({{ vehicle.year }})</span>
+                          </div>
+                        </div>
+
+                      } @else if (loadingVehicles().has(plate)) {
+                        <!-- ⏳ LOADING -->
+                        <div class="flex items-center gap-2 bg-white border border-gray-200 rounded px-2 py-1.5 opacity-70">
+                          <span class="text-xs font-mono text-gray-500">{{ plate }}</span>
+                          <i class="pi pi-spin pi-spinner text-xs text-blue-500"></i>
+                        </div>
+
+                      } @else {
+                        <!-- ❓ NOT FOUND / ERROR -->
+                        <div class="flex items-center gap-2 bg-white border border-gray-200 rounded px-2 py-1.5">
+                          <span class="text-xs font-mono text-gray-700">{{ plate }}</span>
+                          <span class="text-[10px] text-gray-400">(Нема података)</span>
+                        </div>
+                      }
+                    }
+                  </div>
+                </div>
+              }
             </div>
           }
         </div>
